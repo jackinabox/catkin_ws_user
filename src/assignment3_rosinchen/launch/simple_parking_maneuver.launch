@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<launch>
+
+	<node name="simple_parking_maneuver" pkg="assignment3_rosinchen"
+		type="parking_maneuver.py" output="screen">
+	</node>
+	
+	<node name="simple_drive_control" pkg="assignment3_rosinchen" 
+		type="drive_control.py" output="screen">
+	</node>
+
+</launch>
+
