@@ -11,7 +11,7 @@ from std_msgs.msg import String
 
 # --- definitions ---
 epsilon = 0.05   # allowed inaccuracy for distance calculation
-speed_rpm = 230
+speed_rpm = 200
 angle_left = 30
 angle_straight = 90
 angle_right = 150
@@ -80,10 +80,10 @@ def drive(distance, command, speed, angle):
     # stop the car and set desired steering angle + speed
     pub_speed.publish(0)
     pub_stop_start.publish(1)
-    rospy.sleep(0.5)
+    rospy.sleep(1)
     pub_steering.publish(angle)
     pub_stop_start.publish(0)
-    rospy.sleep(0.5)
+    rospy.sleep(1)
     pub_speed.publish(speed)
     rospy.loginfo("publish speed "+str(speed)+", distance "+str(distance))
 
