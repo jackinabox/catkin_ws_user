@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# --- imports ---
+# --- imports ----
 import rospy
 from simple_parking_maneuver.srv import *
 from std_msgs.msg import Float32

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# --- imports ---
+# --- imports ----
 import rospy
 from math import sqrt
 from std_msgs.msg import UInt8
