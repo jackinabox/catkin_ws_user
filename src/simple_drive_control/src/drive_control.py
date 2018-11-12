@@ -11,7 +11,7 @@ from std_msgs.msg import String
 
 # --- definitions ---
 epsilon = 0.05   # allowed inaccuracy for distance calculation
-speed_rpm = 200
+speed_rpm = 230
 angle_left = 30
 angle_straight = 90
 angle_right = 150
@@ -58,7 +58,7 @@ def callbackBackwardRight(msg):
 
 def drive(distance, command, speed, angle):
     global is_active
-
+    #rospy.loginfo("publish 1")
     rospy.loginfo("%s: Running %s(%f)", rospy.get_caller_id(), command, distance)
     if distance <= 0:
         rospy.logerr(
@@ -75,15 +75,17 @@ def drive(distance, command, speed, angle):
         return
 
     is_active = True
+    #rospy.loginfo("publish 2")
 
     # stop the car and set desired steering angle + speed
     pub_speed.publish(0)
     pub_stop_start.publish(1)
-    rospy.sleep(1)
+    rospy.sleep(0.5)
     pub_steering.publish(angle)
     pub_stop_start.publish(0)
-    rospy.sleep(1)
+    rospy.sleep(0.5)
     pub_speed.publish(speed)
+    rospy.loginfo("publish speed "+str(speed)+", distance "+str(distance))
 
     start_pos = last_odom.pose.pose.position
     current_distance = 0
@@ -93,7 +95,7 @@ def drive(distance, command, speed, angle):
         current_distance = sqrt(
             (current_pos.x - start_pos.x)**2 + (current_pos.y - start_pos.y)**2)
         # rospy.loginfo("current distance = %f", current_distance)
-        rospy.sleep(0.1)
+        rospy.sleep(0.05)
 
     pub_speed.publish(0)
     is_active = False
@@ -146,12 +148,24 @@ pub_stop_start = rospy.Publisher(
     "manual_control/stop_start",
     Int16,
     queue_size=100)
-pub_speed = rospy.Publisher("manual_control/speed", Int16, queue_size=100)
+pub_speed = rospy.Publisher("speed", Int16, queue_size=100)
 pub_steering = rospy.Publisher(
     "steering",
     UInt8,
     queue_size=100)
 pub_info = rospy.Publisher("simple_drive_control/info", String, queue_size=100)
+
+#for i in range(5):
+#    #pub_speed.publish(0)
+#    rospy.sleep(0.5)
+#    pub_steering.publish(90+30*(-1)**i)
+#    rospy.sleep(0.5)
+#    pub_speed.publish(300*(-1)**i)
+#    rospy.sleep(0.5)
+#    pub_speed.publish(0)
+#    rospy.loginfo("One iteration done.")
+#pub_speed.publish(0)
+#pub_steering.publish(90)
 
 rospy.loginfo(rospy.get_caller_id() + ": started!")
 
