@@ -10,6 +10,7 @@ from geometry_msgs.msg import Point
 from geometry_msgs.msg import Quaternion
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
+import numpy as np
 #import matplotlib
 #matplotlib.use('Agg')
 #from matplotlib import pyplot as plt
@@ -45,6 +46,36 @@ class image_converter:
     bi_gray_min = 245
     ret,thresh1=cv2.threshold(gray, bi_gray_min, bi_gray_max, cv2.THRESH_BINARY);
 
+    #new----
+    #rospy.loginfo("dim thres1 ret"+str(thresh1.shape)+str(ret))
+    dim=thresh1.shape
+    thresh1=thresh1[0:int(0.85*dim[0]),:]
+
+    vectors=np.array(np.nonzero(thresh1)).T
+    rospy.loginfo("vectors"+str(vectors.shape))
+    vectors = np.float32(vectors)
+    #rospy.loginfo("dim thres1"+str(thresh1.shape)+str(type(thresh1)))#+str(thresh1[thresh1!=0]))
+    ret,labels,centers=cv2.kmeans(vectors, 6, criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_MAX_ITER,1,10),
+           attempts=1, bestLabels=None, flags=cv2.KMEANS_RANDOM_CENTERS)
+    #centers=centers[::-1]
+    centers=np.array(centers,dtype=int)
+    rospy.loginfo("   centers:"+str(centers)+"shape"+str(centers.shape))
+
+    #centers=np.flip(centers,1)
+    #temp=centers[:,0]
+    #centers[:,0]=centers[:,1]
+    #centers[:,1]=temp
+    #rospy.loginfo("   centers:"+str(centers)+"shape"+str(centers.shape))
+    rospy.loginfo("   centers:"+str(centers)+"shape"+str(centers.shape))
+    rospy.loginfo(thresh1.shape)
+    thresh1[:,:]=255
+    for i in range(6):
+      thresh1[centers[i,0],centers[i,1]]=0
+    #thresh1[centers]=50
+
+
+
+    """
     #gauss
     MAX_KERNEL_LENGTH = 2;
     i= 5
@@ -57,13 +88,13 @@ class image_converter:
     scale = 1
     delta = 0
     edge_img=cv2.Sobel(thresh1, cv2.CV_8UC1, dx, dy, ksize, scale, delta, cv2.BORDER_DEFAULT)
-
+    
     #bi_rgb
-    r_max = 244/2;
+    r_max = 244;
     r_min = 0;
-    g_max = 255/2;
+    g_max = 255;
     g_min = 0;
-    b_max = 255/2;
+    b_max = 255;
     b_min = 0;
     b,g,r = cv2.split(cv_image)
     for j in range(cv_image.shape[0]):
@@ -71,23 +102,23 @@ class image_converter:
         if (r[j,i] >= r_min and r[j,i] <= r_max):
           if (g[j,i] >= g_min and g[j,i] <= g_max):
             if (b[j,i] >= b_min and b[j,i] <= b_max):
-              pass
-              #r[j,i]=0
-              #g[j,i]=0
-              #b[j,i]=0
+              #pass
+              r[j,i]=0
+              g[j,i]=0
+              b[j,i]=0
             else:
-              pass
-              #r[j,i]=255
-              #g[j,i]=255
-              #b[j,i]=255
+              #pass
+              r[j,i]=255
+              g[j,i]=255
+              b[j,i]=255
     bi_rgb = cv2.merge((b,g,r))
-
+    
     #bi_hsv
-    h_max = 255/2;
+    h_max = 255;
     h_min = 0;
-    s_max = 255/2;
+    s_max = 255;
     s_min= 0;
-    v_max = 252/2;
+    v_max = 252;
     v_min = 0;
     hsv=cv2.cvtColor(cv_image,cv2.COLOR_BGR2HSV);
     h,s,v = cv2.split(hsv)
@@ -95,18 +126,18 @@ class image_converter:
     for j in xrange(hsv.shape[0]):
       for i in xrange(hsv.shape[1]):
         if  (v[j,i]>= v_min and v[j,i]<= v_max and s[j,i]>= s_min and s[j,i]<= s_max and h[j,i]>= h_min and h[j,i]<= h_max):
-          pass
-          #h[j,i]=0
-          #s[j,i]=0
-          #v[j,i]=0
+          #pass
+          h[j,i]=0
+          s[j,i]=0
+          v[j,i]=0
         else:
-          pass
-          #h[j,i]=255
-          #s[j,i]=255
-          #v[j,i]=255
+          #pass
+          h[j,i]=255
+          s[j,i]=255
+          v[j,i]=255
 
     bi_hsv = cv2.merge((h,s,v))
-
+    """
     # titles = ['Original Image', 'GRAY','BINARY','GAUSS','EDGE','BI_RGB','BI_HSV']
     # images = [cv_image, gray, thresh1,dst,edge_img,bi_rgb,bi_hsv]
     #
