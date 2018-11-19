@@ -54,26 +54,51 @@ class image_converter:
     vectors=np.array(np.nonzero(thresh1)).T
     rospy.loginfo("vectors"+str(vectors.shape))
     vectors = np.float32(vectors)
-    #rospy.loginfo("dim thres1"+str(thresh1.shape)+str(type(thresh1)))#+str(thresh1[thresh1!=0]))
-    ret,labels,centers=cv2.kmeans(vectors, 6, criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_MAX_ITER,1,10),
-           attempts=1, bestLabels=None, flags=cv2.KMEANS_RANDOM_CENTERS)
-    #centers=centers[::-1]
-    centers=np.array(centers,dtype=int)
-    rospy.loginfo("   centers:"+str(centers)+"shape"+str(centers.shape))
 
-    #centers=np.flip(centers,1)
-    #temp=centers[:,0]
-    #centers[:,0]=centers[:,1]
-    #centers[:,1]=temp
+    pointer=1
+    epsilon=20
+    clusterPointer=np.zeros(vectors.shape[0])
+    for vect in range(len(vectors)):
+      for vect2 in range(vect,len(vectors)):
+        if np.linalg.norm(vectors[vect]-vectors[vect2])<epsilon:
+          if clusterPointer[vect]!=0:
+            clusterPointer[vect2]=clusterPointer[vect]
+          else:
+            clusterPointer[vect]=pointer
+            clusterPointer[vect2]=pointer
+            pointer+=1
+
+    #rospy.loginfo("clusterPointer"+str(clusterPointer))
+    clusterVectors=[None for x in range(int(max(clusterPointer)))]
+    means=[None for x in range(int(max(clusterPointer)))]
+    for cluster in range(int(max(clusterPointer))):
+      clusterVectors[cluster]=vectors[clusterPointer==cluster+1]
+      means[cluster]=np.mean(vectors[clusterPointer==cluster+1],axis=0)
+
+    #rospy.loginfo("clusterPointer"+str(clusterVectors))
+    #rospy.loginfo("clusterPointer mean"+str(means))
+    
+    thresh1[:,:]=0 #w
+    for i in range(int(max(clusterPointer))):
+      thresh1[int(means[i][0]),int(means[i][1])]=255 #b
+    
+
+    #rospy.sleep(1)
+
+
+
+
+    #ret,labels,centers=cv2.kmeans(vectors, 6, criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_MAX_ITER,1,10),
+    #       attempts=10, bestLabels=None, flags=cv2.KMEANS_RANDOM_CENTERS)
+    #centers=np.array(centers,dtype=int)
     #rospy.loginfo("   centers:"+str(centers)+"shape"+str(centers.shape))
-    rospy.loginfo("   centers:"+str(centers)+"shape"+str(centers.shape))
-    rospy.loginfo(thresh1.shape)
-    thresh1[:,:]=255
-    for i in range(6):
-      thresh1[centers[i,0],centers[i,1]]=0
-    #thresh1[centers]=50
-
-
+    #rospy.loginfo(thresh1.shape)
+    
+    #thresh1[:,:]=0 #w
+    #for i in range(6):
+    #  thresh1[centers[i,0],centers[i,1]]=255 #b
+    
+    #rospy.sleep(2)
 
     """
     #gauss
