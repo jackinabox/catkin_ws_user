@@ -23,12 +23,55 @@ class image_converter:
     rospy.loginfo(" init class.")
 
     self.image_pub = rospy.Publisher("/image_processing/bin_img",Image, queue_size=1)
+    #self.image_pubC = rospy.Publisher("/image_processing/bin_imgCenter",Image, queue_size=1)
 
     self.bridge = CvBridge()
     #self.image_sub = rospy.Subscriber("/app/camera/rgb/image_raw",Image,self.callback, queue_size=1)
     self.image_sub = rospy.Subscriber("/camera/color/image_raw",Image,self.callback, queue_size=1)
 
-
+  def solve(self,img_points):
+    img_points=np.array(img_points)
+    fx = 1367#614.1699
+    fy = 1367#614.9002
+    cx = 329.9491
+    cy = 237.2788
+    camera_mat = np.zeros((3,3,1))
+    camera_mat[:,:,0] = np.array([[fx, 0, cx],
+        [0, fy, cy],
+        [0, 0, 1]])
+    k1 = 0.1115
+    k2 = -0.1089
+    p1 = 0
+    p2 = 0
+    dist_coeffs = np.zeros((4,1))
+    dist_coeffs[:,0] = np.array([[k1, k2, p1, p2]])
+    # far to close, left to right (order of discovery) in cm
+    obj_points = np.zeros((6,3,1))
+    obj_points[:,:,0] = np.array([[58.5,00.0, 0],
+          [58.5,39.8, 0],
+          [28.0, 0.0, 0],
+          [29.0, 40.0,0],
+          [0.0, 0.0,  0],
+          [1.5, 40.0, 0]])
+    rospy.loginfo("image:"+str(img_points))
+    rospy.loginfo("object:"+str(obj_points[:,:,0]))
+    retval, rvec, tvec = cv2.solvePnP(obj_points, img_points,camera_mat, dist_coeffs)
+    rmat = np.zeros((3,3))
+    rospy.loginfo("rvec,tvec:"+str(rvec)+" "+str(tvec))
+    rotation_matrix=cv2.Rodrigues(rvec, rmat, jacobian=0)[0]
+    rospy.loginfo("rotation matrix:"+str(rotation_matrix))
+    transformation=np.zeros((4,4))
+    transformation[0:3,0:3]=rotation_matrix
+    transformation[0:3,3]=tvec[:,0]
+    transformation[3,3]=1
+    rospy.loginfo("transformation matrix:"+str(transformation))
+    transformation_inv=np.linalg.inv(transformation)
+    rospy.loginfo("transformation matrix INV:"+str(transformation_inv))
+    #t_vec_real=np.matmul(transformation_inv,np.append(tvec[:,0],0))
+    vec_real=np.dot(transformation_inv,np.append([406.82318115, 583.26831055,0],1))
+    rospy.loginfo("vec real:"+str(vec_real))
+    
+    
   def callback(self,data):
     rospy.loginfo("  start callback.")
 
@@ -49,7 +92,12 @@ class image_converter:
     #new----
     #rospy.loginfo("dim thres1 ret"+str(thresh1.shape)+str(ret))
     dim=thresh1.shape
-    thresh1=thresh1[0:int(0.85*dim[0]),:]
+    #thresh1=thresh1[0:int(0.85*dim[0]),:] #Car 125
+    #thresh1=thresh1[int(0.3*dim[0]):int(0.93*dim[0]),:] #Car 122
+    thresh1[0:int(0.3*dim[0])]=0 #Car 122
+    thresh1[int(0.93*dim[0]):dim[0],:]=0 #Car 122
+
+    #gray=gray[int(0.3*dim[0]):int(0.93*dim[0]),:] #Car 122
 
     vectors=np.array(np.nonzero(thresh1)).T
     rospy.loginfo("vectors"+str(vectors.shape))
@@ -69,19 +117,24 @@ class image_converter:
             pointer+=1
 
     #rospy.loginfo("clusterPointer"+str(clusterPointer))
-    clusterVectors=[None for x in range(int(max(clusterPointer)))]
+    #clusterVectors=[None for x in range(int(max(clusterPointer)))]
     means=[None for x in range(int(max(clusterPointer)))]
     for cluster in range(int(max(clusterPointer))):
-      clusterVectors[cluster]=vectors[clusterPointer==cluster+1]
+      #clusterVectors[cluster]=vectors[clusterPointer==cluster+1]
       means[cluster]=np.mean(vectors[clusterPointer==cluster+1],axis=0)
+      #rospy.loginfo("cluster "+str(cluster)+": "+str(means[cluster][:]))
 
-    #rospy.loginfo("clusterPointer"+str(clusterVectors))
+    #rospy.loginfo("means"+str(means))
     #rospy.loginfo("clusterPointer mean"+str(means))
     
-    thresh1[:,:]=0 #w
-    for i in range(int(max(clusterPointer))):
-      thresh1[int(means[i][0]),int(means[i][1])]=255 #b
+    replaceByCenter=True
+    if replaceByCenter:
+      #thresh2=np.zeros(thresh1.shape)#thresh1[:,:]
+      thresh1[:,:]=0 #w
+      for i in range(int(max(clusterPointer))):
+        thresh1[int(means[i][0]),int(means[i][1])]=255 #b
     
+    self.solve(means)
 
     #rospy.sleep(1)
 
@@ -176,6 +229,8 @@ class image_converter:
 
     try:
       self.image_pub.publish(self.bridge.cv2_to_imgmsg(thresh1, "mono8"))
+      #self.image_pub.publish(self.bridge.cv2_to_imgmsg(gray, "mono8"))
+      #self.image_pubC.publish(self.bridge.cv2_to_imgmsg(thresh2, "mono8"))
       rospy.loginfo("  publishing an image.")
     except CvBridgeError as e:
       print(e)
