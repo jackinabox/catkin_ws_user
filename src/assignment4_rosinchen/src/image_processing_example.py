@@ -62,7 +62,7 @@ class image_converter:
 
     
   def callback(self,data):
-    rospy.loginfo("\n::: start callback :::")
+    rospy.loginfo("\n\t::: start callback :::")
 
     try:
       cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
@@ -86,9 +86,11 @@ class image_converter:
     #new----
     #rospy.loginfo("dim thres1 ret"+str(thresh1.shape)+str(ret))
     dim = img_binary.shape
-    #img_binary = img_binary[0:int(0.85*dim[0]),:] #Car 125
-    img_binary[0:int(0.3*dim[0])] = 0 #Car 122
-    img_binary[int(0.93*dim[0]):dim[0], :] = 0 #Car 122
+
+    #img_binary[0:int(0.3*dim[0])] = 0 #Car 122
+    #img_binary[int(0.93*dim[0]):dim[0], :] = 0 #Car 122
+    img_binary[0:int(0.3*dim[0])] = 0 #Car 125
+    img_binary[int(0.85*dim[0]):dim[0], :] = 0 #Car 125
 
     try:
       self.image_bin_pub.publish(self.bridge.cv2_to_imgmsg(img_binary, "mono8"))
@@ -146,7 +148,8 @@ class image_converter:
     transformation_inv = np.linalg.inv(transformation)
     rospy.loginfo("\ntransformation matrix INV:\n"+str(transformation_inv))
     #t_vec_real=np.matmul(transformation_inv,np.append(tvec[:,0],0))
-    vec_real = np.dot(transformation_inv, np.append([406.82318115, 583.26831055, 0], 1))
+    #vec_real = np.dot(transformation_inv, np.append([406.82318115, 583.26831055, 0], 1))
+    vec_real = np.dot(transformation_inv, np.append([0., 0., 0.], 1))
     rospy.loginfo("vec real:"+str(vec_real))
 
 
