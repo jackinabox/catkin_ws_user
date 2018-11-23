@@ -28,6 +28,9 @@ class image_converter:
     self.bridge = CvBridge()
     #self.image_sub = rospy.Subscriber("/app/camera/rgb/image_raw",Image,self.callback, queue_size=1)
     self.image_sub = rospy.Subscriber("/camera/color/image_raw", Image, self.callback, queue_size=1)
+    self.image_shape=[None,None]
+    self.ransac_treshold=30
+    self.numberOfIterations=10
 
   def solve(self, img_points):
     img_points=np.array(img_points)
@@ -62,7 +65,7 @@ class image_converter:
 
   def getMb(self, vec0, vec1):
     m = (vec1[1]-vec0[1]) / (vec1[0]-vec0[0])
-    b = lambda x: (x-vec0[0]) * m + vec0[1]
+    b = lambda x: int((x-vec0[0]) * m + vec0[1])
     return (m,b(0),b)
 
   def drawLine(self, img, p):
@@ -71,15 +74,35 @@ class image_converter:
     rospy.loginfo("Choice:\np0 = (%f, %f)\p1=(%f, %f)" % (p0[0], p0[1], p1[0], p1[1]))
     return cv2.line(img, p0, p1, (255, 255, 255))
 
-  def ransac(self, vectors, threshold):
 
-    choice = vectors[np.random.choice(range(vectors.shape[0]), 10, replace=False)]
-    rospy.loginfo(choice[0] in vectors)
-    rospy.loginfo(choice[0] in vectors)
-    rospy.loginfo("choice:"+str(choice))
-    m, b, b_func = self.getMb(choice[0], choice[1])
-    rospy.loginfo("m = %f; b = %f" % (m, b))
-    return choice
+  def ransac(self, vectors, threshold):
+    results=np.zeros((self.numberOfIterations,3))
+    for i in range(self.numberOfIterations):
+    
+      choice = vectors[np.random.choice(range(vectors.shape[0]), 2, replace=False)]
+      rospy.loginfo(choice[0] in vectors)
+      rospy.loginfo(choice[0] in vectors)
+      rospy.loginfo("choice:"+str(choice))
+      m, b, b_func = self.getMb(choice[0], choice[1])
+      #m,b,bf = self.getMb(p[0],p[1])
+         #rospy.loginfo("m = %f; b = %f" % (m, b))
+
+      inliers=np.zeros(vectors.shape[0])
+      for vec in range(len(vectors)):
+        if abs(vectors[vec,1]-b_func(vectors[vec,0]))<=self.ransac_treshold:
+          inliers[vec]=1
+      results[i,:]=[m,b,sum(inliers)]
+      #rospy.loginfo("   m = %f; b = %f" % (m, b))
+    best_result=results[np.argmax(results[:,2]),:]
+    rospy.loginfo(str(results))
+    rospy.loginfo("  best result"+str(best_result))
+
+    m,b,_=best_result 
+    edge=[None,None]
+    edge[0]=(0, int(b))
+    edge[1]=(self.image_shape[0], int(m*(self.image_shape[0])+b))
+      
+    return edge
 
     
   def callback(self,data):
@@ -92,6 +115,7 @@ class image_converter:
 
     #make it gray
     gray = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
+    self.image_shape=gray.shape
 
     try:
       self.image_grey_pub.publish(self.bridge.cv2_to_imgmsg(gray, "mono8"))
@@ -123,147 +147,20 @@ class image_converter:
     rospy.loginfo("vectors"+str(vectors.shape))
     vectors = np.float32(vectors)
 
-    test_img = np.zeros(img_binary.shape)
-    for x in vectors:
-      test_img[int(x[0]), int(x[1])] = 255
-    test_img = test_img.astype(np.uint8)
+    #test_img = np.zeros(img_binary.shape)
+    #for x in vectors:
+    #  test_img[int(x[0]), int(x[1])] = 255
+    #test_img = test_img.astype(np.uint8)
 
     p = self.ransac(vectors, 5)
+    
     img_line = self.drawLine(img_binary, p)
 
     try:
       self.image_bin_pub.publish(self.bridge.cv2_to_imgmsg(img_binary, "mono8"))
       rospy.loginfo("publishing binary image + line.")
     except CvBridgeError as e:
-      print(e)
-
-    """
-
-    numberOfClusters=1
-    epsilon = 20  # in pixels
-    clusterIndices = np.zeros(vectors.shape[0])
-    for vec_x in range(len(vectors)):
-      for vec_y in range(vec_x, len(vectors)):
-        if np.linalg.norm(vectors[vec_x]-vectors[vec_y]) < epsilon:
-          if clusterIndices[vec_x] != 0:
-            clusterIndices[vec_y] = clusterIndices[vec_x]
-          else:
-            clusterIndices[vec_x] = numberOfClusters
-            clusterIndices[vec_y] = numberOfClusters
-            numberOfClusters += 1
-
-    #rospy.loginfo("clusterIndices"+str(clusterIndices))
-    #clusterVectors=[None for x in range(int(max(clusterIndices)))]
-
-    means = [None for x in range(int(max(clusterIndices)))]
-    for cluster in range(int(max(clusterIndices))):
-      #clusterVectors[cluster]=vectors[clusterPointer==cluster+1]
-      means[cluster] = np.mean(vectors[clusterIndices == cluster+1], axis=0)
-      #rospy.loginfo("cluster "+str(cluster)+": "+str(means[cluster][:]))
-
-    #rospy.loginfo("means"+str(means))
-    #rospy.loginfo("clusterPointer mean"+str(means))
-
-    img_binary[:, :] = 0
-    for i in range(int(max(clusterIndices))):
-      img_binary[int(means[i][0]), int(means[i][1])] = 255
-
-    try:
-      self.image_dot_pub.publish(self.bridge.cv2_to_imgmsg(img_binary, "mono8"))
-      rospy.loginfo("publishing centroids image.")
-    except CvBridgeError as e:
-      print(e)
-
-    rvec, tvec, rotation_matrix = self.solve(means)
-    rospy.loginfo("\nrvec,tvec:\n"+str(rvec)+"\n"+str(tvec))
-    rospy.loginfo("rotation matrix:\n"+str(rotation_matrix))
-    transformation=np.zeros((4, 4))
-    transformation[0:3, 0:3] = rotation_matrix
-    transformation[0:3, 3] = tvec[:, 0]
-    transformation[3, 3] = 1
-    rospy.loginfo("\ntransformation matrix:\n"+str(transformation))
-    transformation_inv = np.linalg.inv(transformation)
-    rospy.loginfo("\ntransformation matrix INV:\n"+str(transformation_inv))
-    #t_vec_real=np.matmul(transformation_inv,np.append(tvec[:,0],0))
-    #vec_real = np.dot(transformation_inv, np.append([406.82318115, 583.26831055, 0], 1))
-    vec_real = np.dot(transformation_inv, np.append([0., 0., 0.], 1))
-    rospy.loginfo("vec real:"+str(vec_real))
-    """
-
-    """
-    #gauss
-    MAX_KERNEL_LENGTH = 2;
-    i= 5
-    dst=cv2.GaussianBlur(cv_image,(5,5),0,0)
-
-    #edge
-    dx = 1;
-    dy = 1;
-    ksize = 3; #1,3,5,7
-    scale = 1
-    delta = 0
-    edge_img=cv2.Sobel(thresh1, cv2.CV_8UC1, dx, dy, ksize, scale, delta, cv2.BORDER_DEFAULT)
-    
-    #bi_rgb
-    r_max = 244;
-    r_min = 0;
-    g_max = 255;
-    g_min = 0;
-    b_max = 255;
-    b_min = 0;
-    b,g,r = cv2.split(cv_image)
-    for j in range(cv_image.shape[0]):
-      for i in range(cv_image.shape[1]):
-        if (r[j,i] >= r_min and r[j,i] <= r_max):
-          if (g[j,i] >= g_min and g[j,i] <= g_max):
-            if (b[j,i] >= b_min and b[j,i] <= b_max):
-              #pass
-              r[j,i]=0
-              g[j,i]=0
-              b[j,i]=0
-            else:
-              #pass
-              r[j,i]=255
-              g[j,i]=255
-              b[j,i]=255
-    bi_rgb = cv2.merge((b,g,r))
-    
-    #bi_hsv
-    h_max = 255;
-    h_min = 0;
-    s_max = 255;
-    s_min= 0;
-    v_max = 252;
-    v_min = 0;
-    hsv=cv2.cvtColor(cv_image,cv2.COLOR_BGR2HSV);
-    h,s,v = cv2.split(hsv)
-
-    for j in xrange(hsv.shape[0]):
-      for i in xrange(hsv.shape[1]):
-        if  (v[j,i]>= v_min and v[j,i]<= v_max and s[j,i]>= s_min and s[j,i]<= s_max and h[j,i]>= h_min and h[j,i]<= h_max):
-          #pass
-          h[j,i]=0
-          s[j,i]=0
-          v[j,i]=0
-        else:
-          #pass
-          h[j,i]=255
-          s[j,i]=255
-          v[j,i]=255
-
-    bi_hsv = cv2.merge((h,s,v))
-    """
-    # titles = ['Original Image', 'GRAY','BINARY','GAUSS','EDGE','BI_RGB','BI_HSV']
-    # images = [cv_image, gray, thresh1,dst,edge_img,bi_rgb,bi_hsv]
-    #
-    # for i in xrange(7):
-    #   plt.subplot(2,4,i+1),plt.imshow(images[i],'gray')
-    #   plt.title(titles[i])
-    #   plt.xticks([]),plt.yticks([])
-    #
-    # plt.show()
-    # print("Done")
-      
+      print(e)    
 
 def main(args):
   rospy.init_node('image_converter', anonymous=True)
