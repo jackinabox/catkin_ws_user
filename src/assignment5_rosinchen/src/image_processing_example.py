@@ -60,6 +60,27 @@ class image_converter:
     rotation_matrix=cv2.Rodrigues(rvec, rmat, jacobian=0)[0]
     return (rvec, tvec, rotation_matrix)
 
+  def getMb(self, vec0, vec1):
+    m = (vec1[1]-vec0[1]) / (vec1[0]-vec0[0])
+    b = lambda x: (x-vec0[0]) * m + vec0[1]
+    return (m,b(0),b)
+
+  def drawLine(self, img, p):
+    p0 = (p[0][1], p[0][0])
+    p1 = (p[1][1], p[1][0])
+    rospy.loginfo("Choice:\np0 = (%f, %f)\p1=(%f, %f)" % (p0[0], p0[1], p1[0], p1[1]))
+    return cv2.line(img, p0, p1, (255, 255, 255))
+
+  def ransac(self, vectors, threshold):
+
+    choice = vectors[np.random.choice(range(vectors.shape[0]), 10, replace=False)]
+    rospy.loginfo(choice[0] in vectors)
+    rospy.loginfo(choice[0] in vectors)
+    rospy.loginfo("choice:"+str(choice))
+    m, b, b_func = self.getMb(choice[0], choice[1])
+    rospy.loginfo("m = %f; b = %f" % (m, b))
+    return choice
+
     
   def callback(self,data):
     rospy.loginfo("\n\t::: start callback :::")
@@ -92,15 +113,31 @@ class image_converter:
     img_binary[0:int(0.3*dim[0])] = 0 #Car 125
     img_binary[int(0.85*dim[0]):dim[0], :] = 0 #Car 125
 
-    try:
-      self.image_bin_pub.publish(self.bridge.cv2_to_imgmsg(img_binary, "mono8"))
-      rospy.loginfo("publishing binary image.")
-    except CvBridgeError as e:
-      print(e)
-    """
+    #try:
+     # self.image_bin_pub.publish(self.bridge.cv2_to_imgmsg(img_binary, "mono8"))
+      #rospy.loginfo("publishing binary image.")
+    #except CvBridgeError as e:
+      #print(e)
+
     vectors = np.array(np.nonzero(img_binary)).T
     rospy.loginfo("vectors"+str(vectors.shape))
     vectors = np.float32(vectors)
+
+    test_img = np.zeros(img_binary.shape)
+    for x in vectors:
+      test_img[int(x[0]), int(x[1])] = 255
+    test_img = test_img.astype(np.uint8)
+
+    p = self.ransac(vectors, 5)
+    img_line = self.drawLine(img_binary, p)
+
+    try:
+      self.image_bin_pub.publish(self.bridge.cv2_to_imgmsg(img_binary, "mono8"))
+      rospy.loginfo("publishing binary image + line.")
+    except CvBridgeError as e:
+      print(e)
+
+    """
 
     numberOfClusters=1
     epsilon = 20  # in pixels
