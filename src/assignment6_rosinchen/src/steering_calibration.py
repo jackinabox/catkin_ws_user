@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#receives scan data and calculates shortest distance to wall
+
 import rospy
 from std_msgs.msg import String
 from std_msgs.msg import Float32
@@ -10,6 +10,7 @@ import matplotlib
 matplotlib.use('TkAgg')
 from matplotlib import pyplot as plt
 
+deg_step = 0.01745
 ransac_threshold = 0.15
 numberOfIterations = 80
 #samplerate = 0.05
@@ -49,21 +50,24 @@ def ransac(points):
 	#rospy.loginfo(str(results[:, 2]))
 	indBest = np.argmax(results[:, 2])
 	best_result = results[indBest, :]
-	rospy.loginfo("number of inliers: " + str(best_result[2]))
+	rospy.loginfo("best results: " + str(best_result))
 	m, b, _ = best_result
 	return (m, b), inliersOfIterations[indBest]
 
 def get_point_coords_from_scan(ranges):
 	coords = np.zeros((len(ranges), 2))
 	for ind, dist in enumerate(ranges):
-		angle = -np.pi + (ind * 0.01745)
+		angle = -np.pi + (ind * deg_step)
 		if dist <= dist_threshold:
 			x = dist * np.cos(angle)
 			y = dist * np.sin(angle)
-			coords[ind] = np.array([x, y])
-	return coords
+		else:
+			x, y = np.inf, np.inf
+		coords[ind] = np.array([x, y])
+	coords = coords[np.isfinite(coords)]
+	return coords.reshape((len(coords)//2, 2))
 
-def plot_lines(points):
+def plot_points(points):
 	rospy.loginfo("dim points for plot:" + str(points.shape))
 	x = points[:, 0]
 	y = points[:, 1]
@@ -71,36 +75,34 @@ def plot_lines(points):
 	#area = (30 * np.random.rand(N)) ** 2  # 0 to 15 point radii
 
 	plt.scatter(x, y)
-	plt.show(block = False)
+	plt.show(block=False)
 
 def plotter(m,n,daten):
 	f = lambda x: m*x+n
-	x = np.linspace(-0.79,-0.7)
+	x = np.linspace(-0.79, -0.7)
 	y = f(x)
-	plt.scatter(daten[:,0],daten[:,1])
-	plt.scatter(x,y)
+	plt.scatter(daten[:, 0], daten[:, 1])
+	plt.scatter(x, y)
 	plt.show(block=False)
 
 def callback(raw_msg):
 	rospy.loginfo("start callback")
 	scan_points = get_point_coords_from_scan(raw_msg.ranges)
-	points = scan_points[scan_points != np.array([0, 0])]
-	points = points.reshape((len(points)//2, 2))
-	#rospy.loginfo(points)
-	line_one, inliers_one = ransac(points)
-	points_subset = points[inliers_one == 0]
+	rospy.loginfo(scan_points)
+	line_one, inliers_one = ransac(scan_points)
+	points_subset = scan_points[inliers_one == 0]
 	line_two, inliers_two = ransac(points_subset)
-	#plot_lines(points)
-	#plotter(line_one[0], line_one[1], points)
-	#plotter(line_two[0], line_two[1], points)
-	#plot_lines(points[inliers_one == 0])
-	plot_lines(points_subset[inliers_two == 1])
+	#plot_points(points)
+	plotter(line_one[0], line_one[1], points_subset)
+	#plotter(line_two[0], line_two[1], scan_points)
+	#plot_points(scan_points[inliers_one == 0])
+	#plot_points(points_subset[inliers_two == 1])
 	#plotter(points[inliers_one == 0][0])
 	#rospy.loginfo("head: "+str(raw_msg.ranges[:10]))
 	#rospy.loginfo("tail: " + str(raw_msg.ranges[-10:]))
 	#rospy.loginfo("min dist: " + str(np.min(raw_msg.ranges)))
 	#rospy.loginfo("incr: " + str(raw_msg.angle_increment))
-	rospy.loginfo("points: " + str(points))
+	#rospy.loginfo("points: " + str(points))
 	#pub_scan.publish("I heard scan: "+str(scan))
 
 rospy.init_node("node_wall_scan")
