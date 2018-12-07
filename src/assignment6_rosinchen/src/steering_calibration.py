@@ -6,9 +6,9 @@ from std_msgs.msg import Float32
 #from geometry_msgs.msg import Quaternion
 from sensor_msgs.msg import LaserScan
 import numpy as np
-import matplotlib
-matplotlib.use('TkAgg')
-from matplotlib import pyplot as plt
+#import matplotlib
+#matplotlib.use('TkAgg')
+#from matplotlib import pyplot as plt
 
 deg_step = 0.01745
 ransac_threshold = 0.15
@@ -88,8 +88,12 @@ def roots(ranges, dx):
 	#x = np.linspace(0, 359./360 * 2 * np.pi, 360)
 	x = np.arange(-100,100,1)
 	fit = np.polyfit(x, ranges, 4)
-
-	rospy.loginfo("fit "+str(fit))
+	rospy.loginfo(" 1. fit  :"+str(fit))
+	der=np.polyder(fit)
+	rospy.loginfo(" 2. deriv:"+str(der))
+	root=np.roots(der)
+	rospy.loginfo(" 3. root :"+str(root))
+	return root	
 
 def interpolate(arr):
 	for ind, val in enumerate(arr):
@@ -107,15 +111,20 @@ def callback(raw_msg):
 	indices=np.arange(360)
 	points  = np.concatenate((ranges[260:],ranges[:100]))
 	indices = np.concatenate((indices[260:],indices[:100]))
-	rospy.loginfo("points: " + str(points))
+	#rospy.loginfo("points: " + str(points))
 	points = interpolate(points)
-	rospy.loginfo("points inter: " + str(points))
+	#rospy.loginfo("points inter: " + str(points))
+	
 	# RANSAC:
 	#line_one, inliers_one = ransac(scan_points)
 	#points_subset = scan_points[inliers_one == 0]
 	#line_two, inliers_two = ransac(points_subset)
 	#points = raw_msg.ranges[np.isfinite(raw_msg.ranges)]
-	derivatives = roots(points, deg_step)
+	root = np.array( np.round(roots(points, deg_step),0), dtype=int)
+	#rospy.loginfo("root int :"+str(root))
+	rospy.loginfo("distance to wall  :"+str(points[root]))
+	
+	
 
 
 	#plot_points(points)
