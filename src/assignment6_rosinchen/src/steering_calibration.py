@@ -15,7 +15,6 @@ ransac_threshold = 0.15
 numberOfIterations = 80
 #samplerate = 0.05
 eps = np.finfo(float).eps
-
 dist_threshold = 2
 
 
@@ -85,16 +84,43 @@ def plotter(m,n,daten):
 	plt.scatter(x, y)
 	plt.show(block=False)
 
+def roots(ranges, dx):
+	#x = np.linspace(0, 359./360 * 2 * np.pi, 360)
+	x = np.arange(-100,100,1)
+	fit = np.polyfit(x, ranges, 4)
+
+	rospy.loginfo("fit "+str(fit))
+
+def interpolate(arr):
+	for ind, val in enumerate(arr):
+		if not np.isfinite(val):
+			arr[ind] = arr[ind-1]
+	return arr
+
 def callback(raw_msg):
 	rospy.loginfo("start callback")
-	scan_points = get_point_coords_from_scan(raw_msg.ranges)
-	rospy.loginfo(scan_points)
-	line_one, inliers_one = ransac(scan_points)
-	points_subset = scan_points[inliers_one == 0]
-	line_two, inliers_two = ransac(points_subset)
+
+	ranges = np.array(raw_msg.ranges,dtype=float)
+
+
+	#rospy.loginfo(raw_msg.ranges)
+	indices=np.arange(360)
+	points  = np.concatenate((ranges[260:],ranges[:100]))
+	indices = np.concatenate((indices[260:],indices[:100]))
+	rospy.loginfo("points: " + str(points))
+	points = interpolate(points)
+	rospy.loginfo("points inter: " + str(points))
+	# RANSAC:
+	#line_one, inliers_one = ransac(scan_points)
+	#points_subset = scan_points[inliers_one == 0]
+	#line_two, inliers_two = ransac(points_subset)
+	#points = raw_msg.ranges[np.isfinite(raw_msg.ranges)]
+	derivatives = roots(points, deg_step)
+
+
 	#plot_points(points)
-	plotter(line_one[0], line_one[1], points_subset)
-	#plotter(line_two[0], line_two[1], scan_points)
+	#plotter(line_one[0], line_one[1], scan_points)
+
 	#plot_points(scan_points[inliers_one == 0])
 	#plot_points(points_subset[inliers_two == 1])
 	#plotter(points[inliers_one == 0][0])
