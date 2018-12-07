@@ -84,7 +84,7 @@ def plotter(m,n,daten):
 	plt.scatter(x, y)
 	plt.show(block=False)
 
-def roots(ranges, dx):
+def distance_to_wall(ranges, dx):
 	#x = np.linspace(0, 359./360 * 2 * np.pi, 360)
 	x = np.arange(-100,100,1)
 	fit = np.polyfit(x, ranges, 4)
@@ -93,7 +93,15 @@ def roots(ranges, dx):
 	rospy.loginfo(" 2. deriv:"+str(der))
 	root=np.roots(der)
 	rospy.loginfo(" 3. root :"+str(root))
-	return root	
+	indices = np.array(np.round(root,0), dtype=int)
+	rospy.loginfo(" 4. indices  :"+str(indices))
+	wall_deg=ranges[indices]
+	rospy.loginfo(" 4. values  :"+str(wall_deg))
+	choice=[0,1,2] # two the three values represent the walls
+	dist=wall_deg[choice]
+	rospy.loginfo(" 5. dist  :"+str(dist))
+
+	return dist
 
 def interpolate(arr):
 	for ind, val in enumerate(arr):
@@ -120,10 +128,15 @@ def callback(raw_msg):
 	#points_subset = scan_points[inliers_one == 0]
 	#line_two, inliers_two = ransac(points_subset)
 	#points = raw_msg.ranges[np.isfinite(raw_msg.ranges)]
-	root = np.array( np.round(roots(points, deg_step),0), dtype=int)
-	#rospy.loginfo("root int :"+str(root))
-	rospy.loginfo("distance to wall  :"+str(points[root]))
+	dist=distance_to_wall(points,deg_step)
+
+	#root = np.array( np.round(roots(points, deg_step),0), dtype=int)
+	rospy.loginfo(" ------ distance :"+str(dist))
+	#rospy.loginfo("distance to wall  :"+str(points[root]))
 	
+	#choice=[0,2] # from measurements we know, that the first and third element give distances to the wall
+	#dist=root[choice]
+	#rospy.loginfo("distance to wall  :"+str(points[root]))
 	
 
 
