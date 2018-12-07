@@ -3,7 +3,6 @@
 
 	<node name="my_drive_control.py" pkg="assignment6_rosinchen" 
 		type="my_drive_control.py" output="screen">
-		<param name="speed_rpm" value="200" />
 	</node>
 
 	<node name="steering_calibration" pkg="assignment6_rosinchen"
