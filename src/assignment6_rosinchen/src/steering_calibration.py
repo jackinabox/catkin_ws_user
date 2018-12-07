@@ -16,6 +16,7 @@ numberOfIterations = 80
 #samplerate = 0.05
 eps = np.finfo(float).eps
 dist_threshold = 2
+scanNow=False
 
 
 def get_m_b(vec0, vec1):
@@ -88,18 +89,25 @@ def distance_to_wall(ranges, dx):
 	#x = np.linspace(0, 359./360 * 2 * np.pi, 360)
 	x = np.arange(-100,100,1)
 	fit = np.polyfit(x, ranges, 4)
-	rospy.loginfo(" 1. fit  :"+str(fit))
+	#rospy.loginfo(" 1. fit  :"+str(fit))
 	der=np.polyder(fit)
-	rospy.loginfo(" 2. deriv:"+str(der))
+	#rospy.loginfo(" 2. deriv:"+str(der))
 	root=np.roots(der)
-	rospy.loginfo(" 3. root :"+str(root))
+	#rospy.loginfo(" 3. root :"+str(root))
+
+	# check, whether max or min via sign of second derivative
+	#der2=np.poly1d(der)
+	#sign=der2(root)
+	#rospy.loginfo(" 3b. sign:"+str(sign))
+	#choice=sign>0
+	choice=[0,1]
+
 	indices = np.array(np.round(root,0), dtype=int)
-	rospy.loginfo(" 4. indices  :"+str(indices))
+	#rospy.loginfo(" 4. indices  :"+str(indices))
 	wall_deg=ranges[indices]
-	rospy.loginfo(" 4. values  :"+str(wall_deg))
-	choice=[0,1,2] # two the three values represent the walls
+	#rospy.loginfo(" 4. values  :"+str(wall_deg))
 	dist=wall_deg[choice]
-	rospy.loginfo(" 5. dist  :"+str(dist))
+	#rospy.loginfo(" 5. dist  :"+str(dist))
 
 	return dist
 
@@ -110,7 +118,7 @@ def interpolate(arr):
 	return arr
 
 def callback(raw_msg):
-	rospy.loginfo("start callback")
+	#rospy.loginfo("start callback")
 
 	ranges = np.array(raw_msg.ranges,dtype=float)
 
@@ -131,7 +139,7 @@ def callback(raw_msg):
 	dist=distance_to_wall(points,deg_step)
 
 	#root = np.array( np.round(roots(points, deg_step),0), dtype=int)
-	rospy.loginfo(" ------ distance :"+str(dist))
+	rospy.loginfo(" ------ distance :"+str(dist)+" -------")
 	#rospy.loginfo("distance to wall  :"+str(points[root]))
 	
 	#choice=[0,2] # from measurements we know, that the first and third element give distances to the wall
@@ -152,12 +160,14 @@ def callback(raw_msg):
 	#rospy.loginfo("incr: " + str(raw_msg.angle_increment))
 	#rospy.loginfo("points: " + str(points))
 	#pub_scan.publish("I heard scan: "+str(scan))
+	#rospy.sleep(1)
 
 rospy.init_node("node_wall_scan")
 rospy.loginfo("start publish and subscribe")
 #plot_lines()
 pub_scan = rospy.Publisher("/wall_scan", Float32, queue_size=1)
 rospy.Subscriber("/scan", LaserScan, callback)
+rospy.loginfo("hallo")
 rospy.loginfo("done.")
 
 rospy.spin()
