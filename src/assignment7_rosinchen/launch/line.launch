@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <launch>
+	<node name="trigger.py" pkg="assignment7_rosinchen" 
+		type="ltrigger.py" output="screen">
+	</node>
+	
 	<node name="line_offset.py" pkg="assignment7_rosinchen" 
 		type="line_offset.py" output="screen">
 	</node>
