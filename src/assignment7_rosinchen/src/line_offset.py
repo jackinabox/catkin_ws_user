@@ -27,6 +27,7 @@ def callback(msg):
 
 rospy.init_node('line_offset')
 pub = rospy.Publisher('/line_param_offset', Float32, queue_size=10)
+rospy.sleep(1)
 rospy.Subscriber('/line_parameter', Point, callback, queue_size=10)
 
 """
