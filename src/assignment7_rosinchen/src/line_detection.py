@@ -5,6 +5,7 @@ import sys
 import rospy
 import cv2
 from std_msgs.msg import String
+from std_msgs.msg import Float32
 from geometry_msgs.msg import Pose
 from geometry_msgs.msg import Point
 from geometry_msgs.msg import Quaternion
@@ -25,6 +26,8 @@ class image_converter:
     self.image_lines_pub = rospy.Publisher("/image_processing/line_img", Image, queue_size=1)
     self.image_grey_pub = rospy.Publisher("/image_processing/grey_img", Image, queue_size=1)
     self.image_bin_pub = rospy.Publisher("/image_processing/bin_img", Image, queue_size=1)
+    self.pub_line_param= rospy.Publisher("/line_parameter",Point, queue_size=1)
+
     self.bridge = CvBridge()
     self.image_sub = rospy.Subscriber("/camera/color/image_raw", Image, self.callback, queue_size=1)
     self.image_shape=[None,None]
@@ -33,6 +36,11 @@ class image_converter:
     self.samplerate = 0.05
     self.pub_type = {0: "mono8", 1: "bgr8"}
     self.eps = np.finfo(float).eps
+
+  def pub_param(self,m,b):
+    rospy.loginfo("try to publish params:")
+    my_point=Point(m,b,0)
+    self.pub_line_param.publish(my_point)
 
   def get_m_b(self, vec0, vec1):
     m = (vec1[1]-vec0[1]) / (vec1[0]-vec0[0]+self.eps)
@@ -54,7 +62,7 @@ class image_converter:
   def pub_img(self, publisher, img, log, img_type):
     try:
       publisher.publish(self.bridge.cv2_to_imgmsg(img, self.pub_type[img_type]))
-      rospy.loginfo(log)
+      #rospy.loginfo(log)
     except CvBridgeError as e:
       print(e)
 
@@ -122,26 +130,28 @@ class image_converter:
 
     line_one, inliers_one = self.ransac(vectors)
     #rospy.loginfo(inliers)
-    vectors_subset = vectors[inliers_one == 0]
+    #vectors_subset = vectors[inliers_one == 0]
 
     #point_img = self.print_points(vectors_subset)
     #self.pub_img(self.image_bin_pub, point_img, "published reduced binary image", 0)
 
-    line_two, _ = self.ransac(vectors_subset)
+    #line_two, _ = self.ransac(vectors_subset)
 
     # print m & b for lines
-    rospy.loginfo("\n\tline one: m = %f,  b = %f\n\tline two: m = %f,  b = %f" %
-                  (line_one[0], line_one[1], line_two[0], line_two[1]))
-
+    #rospy.loginfo("\n\tline one: m = %f,  b = %f\n\tline two: m = %f,  b = %f" %
+    #              (line_one[0], line_one[1], line_two[0], line_two[1]))
+    rospy.loginfo("\n\tline param: m = %f,  b = %f" %
+                  (line_one[0], line_one[1]))
+    self.pub_param(line_one[0], line_one[1])
     p_one = self.getPointsFromLine(line_one)
-    p_two = self.getPointsFromLine(line_two)
+    #p_two = self.getPointsFromLine(line_two)
 
     red = (0, 0, 255)
     green = (0, 255, 0)
     color = green
     thickness = 3
     self.drawLine(cv_image, p_one, color, thickness)
-    self.drawLine(cv_image, p_two, color, thickness)
+    #self.drawLine(cv_image, p_two, color, thickness)
 
     self.pub_img(self.image_lines_pub, cv_image, "published image + lines", 1)
 
@@ -149,6 +159,7 @@ class image_converter:
 def main(args):
   rospy.init_node('image_converter', anonymous=True)
   ic = image_converter()
+
   try:
     rospy.spin()
   except KeyboardInterrupt:
