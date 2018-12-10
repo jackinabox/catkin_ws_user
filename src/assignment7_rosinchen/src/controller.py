@@ -28,9 +28,9 @@ from cv_bridge import CvBridge, CvBridgeError
 #from matplotlib import pyplot as plt
 
 # roslib.load_manifest('my_package')
-trigger = True
+trigger = False
 image_width = 640
-k_p = -1
+k_p = -0.9
 error_queue_size = 10
 #errors = Queue.Queue(maxsize=error_queue_size)
 errors = deque(maxlen=error_queue_size)
@@ -95,6 +95,7 @@ pub_steering = rospy.Publisher("steering", UInt8, queue_size=100)
 pub_logsteering = rospy.Publisher("controller/info", String, queue_size=100)
 
 # TEST
+'''
 err = -200.0
 u_t = k_p * err
 rospy.loginfo("%d" % u_t)
@@ -103,9 +104,10 @@ rospy.sleep(2)
 pub_steering.publish(steering)
 pub_logsteering.publish(steering)
 rospy.loginfo("error: %d -- steering: %d" % (err, steering))
+'''
 
 
-#waitForTrigger()
+waitForTrigger()
 waitForFirstError()
 while trigger:
     control()

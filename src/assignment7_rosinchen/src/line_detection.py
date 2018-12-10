@@ -12,6 +12,7 @@ from geometry_msgs.msg import Quaternion
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 import numpy as np
+
 #import matplotlib
 #matplotlib.use('Agg')
 #from matplotlib import pyplot as plt
