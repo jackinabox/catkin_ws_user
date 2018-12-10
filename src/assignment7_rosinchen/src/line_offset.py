@@ -1,9 +1,9 @@
+#!/usr/bin/env python
 import numpy as np
 import rospy 
 from geometry_msgs.msg import Point
 from std_msgs.msg import Float32 
-
-
+from sensor_msgs.msg import Image
 
 def gerade(m,b,x):
 	return m*x+b
@@ -18,19 +18,16 @@ def abstand(m,b):
 
 
 def callback(msg):
-	
+	rospy.loginfo("HAAAAAAAAAAALLLLLLOOOO")
 	m = msg.x
 	b = msg.y
-	print(m,b)	
-	print(abstand(m,b))
-	
+	rospy.loginfo(abstand(m,b))
 	pub.publish(abstand(m,b))
 
+
 rospy.init_node('line_offset')
-rospy.Subscriber('/line_parameter', Point,callback, queue_size=10)
-
-pub = rospy.Publisher('/line_offset', Float32, queue_size=10)
-
+pub = rospy.Publisher('/line_param_offset', Float32, queue_size=10)
+rospy.Subscriber('/line_parameter', Point, callback, queue_size=10)
 
 """
 Wenn der Abstand negativ ist dann nach rechts lenken, wenn positiv dann nach links!
