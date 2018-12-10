@@ -50,8 +50,8 @@ def waitForFirstError():
         rospy.sleep(0.1)
 
 def callbackError(msg):
-    rospy.loginfo("new error: %f" % msg)
-    errors.appendleft(msg)
+    rospy.loginfo("new error: %f" % msg.data)
+    errors.appendleft(msg.data)
 
 def callbackTrigger(msg):
     rospy.loginfo("str(msg)")
