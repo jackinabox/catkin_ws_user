@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import time
 import roslib
 # roslib.load_manifest('my_package')
 import sys
@@ -33,14 +34,14 @@ class image_converter:
     self.image_sub = rospy.Subscriber("/camera/color/image_raw", Image, self.callback, queue_size=1)
     self.image_shape = [None, None]
     self.ransac_threshold = 8
-    self.numberOfIterations = 50
-    self.samplerate = 0.05
+    self.numberOfIterations = 20
+    self.samplerate = 0.025
     self.valid_line_threshold = 0.5
     self.pub_type = {0: "mono8", 1: "bgr8"}
     self.eps = np.finfo(float).eps
 
   def pub_param(self, m, b):
-    rospy.loginfo("%s: publishing line params...", rospy.get_caller_id())
+    rospy.loginfo("publishing line params...")
     my_point = Point(m, b, 0)
     self.pub_line_param.publish(my_point)
 
@@ -76,6 +77,7 @@ class image_converter:
     return edge
 
   def ransac(self, points):
+    rospy.loginfo("points_dim: %s" % str(points.shape))
     results = np.zeros((self.numberOfIterations, 3))
     inliersOfIterations = {}
     for iter in range(self.numberOfIterations):
@@ -96,7 +98,7 @@ class image_converter:
     return (m, b), inliersOfIterations[indBest]
 
   def line_is_valid(self, inliers):
-    return np.sum(inliers_one) / len(inliers) >= self.valid_line_threshold
+    return np.sum(inliers) / len(inliers) >= self.valid_line_threshold
 
   def callback(self, data):
     #rospy.loginfo("\n\t::: start callback :::")
@@ -105,6 +107,9 @@ class image_converter:
       cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
     except CvBridgeError as e:
       print(e)
+
+
+
 
     # make it gray
     gray = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
@@ -133,7 +138,7 @@ class image_converter:
     point_img = self.print_points(vectors)
     self.pub_img(self.image_bin_pub, point_img, "published initial binary image", 0)
     '''
-
+    start_time = time.time()
     line_one, inliers_one = self.ransac(vectors)
     #rospy.loginfo(inliers)
     #vectors_subset = vectors[inliers_one == 0]
@@ -146,10 +151,14 @@ class image_converter:
     # print m & b for lines
     #rospy.loginfo("\n\tline one: m = %f,  b = %f\n\tline two: m = %f,  b = %f" %
     #              (line_one[0], line_one[1], line_two[0], line_two[1]))
-    if line_is_valid(inliers_one):
+
+    print("--- %s seconds ---" % (time.time() - start_time))
+
+    if self.line_is_valid(inliers_one):
       self.pub_param(line_one[0], line_one[1])
       rospy.loginfo("%s: line params: m = %f,  b = %f" %
                     (rospy.get_caller_id(), line_one[0], line_one[1]))
+      '''
       p_one = self.getPointsFromLine(line_one)
       #p_two = self.getPointsFromLine(line_two)
 
@@ -161,6 +170,7 @@ class image_converter:
       #self.drawLine(cv_image, p_two, color, thickness)
 
       self.pub_img(self.image_lines_pub, cv_image, "published image + lines", 1)
+      '''
 
 
 def main(args):

@@ -28,9 +28,9 @@ from cv_bridge import CvBridge, CvBridgeError
 #from matplotlib import pyplot as plt
 
 # roslib.load_manifest('my_package')
-trigger = False
+trigger = True
 image_width = 640
-k_p = -0.9
+k_p = -0.8
 error_queue_size = 10
 #errors = Queue.Queue(maxsize=error_queue_size)
 errors = deque(maxlen=error_queue_size)
@@ -43,7 +43,7 @@ def waitForTrigger():
         rospy.sleep(0.1)
 
 def waitForFirstError():
-    while not rospy.is_shutdown() and len(list(errors)) == 0:
+    while len(list(errors)) == 0:
         rospy.loginfo(
             "%s: No initial error message received. Waiting for message...",
             rospy.get_caller_id())
@@ -78,11 +78,20 @@ def steering_mapping_linear(val):
 
 def control():
     err = get_latest_error()
+    #rospy.loginfo("sub_error: %f" % err)
     u_t = k_p * err
     steering = int(steering_mapping_linear(u_t))
-    pub_steering.publish(steering)
+    if steering < 0:
+        pub_steering.publish(0)
+    elif steering > 180:
+        pub_steering.publish(180)
+    else:
+        pub_steering.publish(steering)
+
+    #pub_steering.publish(steering)
     pub_logsteering.publish(steering)
-    rospy.loginfo("error: %d -- steering: %d" % (err, steering))
+    #rospy.loginfo("error: %d -- steering: %d" % (err, steering))
+    rospy.loginfo("%d" % steering)
 
 
 rospy.init_node("controller", anonymous=True)
