@@ -22,25 +22,26 @@ import numpy as np
 class image_converter:
 
   def __init__(self):
-    rospy.loginfo(" init class.")
+    #rospy.loginfo(" init class.")
 
     self.image_lines_pub = rospy.Publisher("/image_processing/line_img", Image, queue_size=1)
     self.image_grey_pub = rospy.Publisher("/image_processing/grey_img", Image, queue_size=1)
     self.image_bin_pub = rospy.Publisher("/image_processing/bin_img", Image, queue_size=1)
-    self.pub_line_param= rospy.Publisher("/line_parameter",Point, queue_size=1)
+    self.pub_line_param= rospy.Publisher("/line_parameter", Point, queue_size=1)
 
     self.bridge = CvBridge()
     self.image_sub = rospy.Subscriber("/camera/color/image_raw", Image, self.callback, queue_size=1)
-    self.image_shape=[None,None]
+    self.image_shape = [None, None]
     self.ransac_threshold = 8
     self.numberOfIterations = 50
     self.samplerate = 0.05
+    self.valid_line_threshold = 0.5
     self.pub_type = {0: "mono8", 1: "bgr8"}
     self.eps = np.finfo(float).eps
 
-  def pub_param(self,m,b):
-    rospy.loginfo("try to publish params:")
-    my_point=Point(m,b,0)
+  def pub_param(self, m, b):
+    rospy.loginfo("%s: publishing line params...", rospy.get_caller_id())
+    my_point = Point(m, b, 0)
     self.pub_line_param.publish(my_point)
 
   def get_m_b(self, vec0, vec1):
@@ -94,9 +95,11 @@ class image_converter:
     m, b, _ = best_result
     return (m, b), inliersOfIterations[indBest]
 
-    
-  def callback(self,data):
-    rospy.loginfo("\n\t::: start callback :::")
+  def line_is_valid(self, inliers):
+    return np.sum(inliers_one) / len(inliers) >= self.valid_line_threshold
+
+  def callback(self, data):
+    #rospy.loginfo("\n\t::: start callback :::")
 
     try:
       cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
@@ -126,8 +129,10 @@ class image_converter:
     #rospy.loginfo("vectors"+str(vectors.shape))
     vectors = vectors[np.random.choice(range(vectors.shape[0]), int(vectors.shape[0] * self.samplerate), replace=False)]
 
+    '''
     point_img = self.print_points(vectors)
     self.pub_img(self.image_bin_pub, point_img, "published initial binary image", 0)
+    '''
 
     line_one, inliers_one = self.ransac(vectors)
     #rospy.loginfo(inliers)
@@ -141,20 +146,21 @@ class image_converter:
     # print m & b for lines
     #rospy.loginfo("\n\tline one: m = %f,  b = %f\n\tline two: m = %f,  b = %f" %
     #              (line_one[0], line_one[1], line_two[0], line_two[1]))
-    rospy.loginfo("\n\tline param: m = %f,  b = %f" %
-                  (line_one[0], line_one[1]))
-    self.pub_param(line_one[0], line_one[1])
-    p_one = self.getPointsFromLine(line_one)
-    #p_two = self.getPointsFromLine(line_two)
+    if line_is_valid(inliers_one):
+      self.pub_param(line_one[0], line_one[1])
+      rospy.loginfo("%s: line params: m = %f,  b = %f" %
+                    (rospy.get_caller_id(), line_one[0], line_one[1]))
+      p_one = self.getPointsFromLine(line_one)
+      #p_two = self.getPointsFromLine(line_two)
 
-    red = (0, 0, 255)
-    green = (0, 255, 0)
-    color = green
-    thickness = 3
-    self.drawLine(cv_image, p_one, color, thickness)
-    #self.drawLine(cv_image, p_two, color, thickness)
+      red = (0, 0, 255)
+      green = (0, 255, 0)
+      color = green
+      thickness = 3
+      self.drawLine(cv_image, p_one, color, thickness)
+      #self.drawLine(cv_image, p_two, color, thickness)
 
-    self.pub_img(self.image_lines_pub, cv_image, "published image + lines", 1)
+      self.pub_img(self.image_lines_pub, cv_image, "published image + lines", 1)
 
 
 def main(args):
