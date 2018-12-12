@@ -17,22 +17,12 @@ from geometry_msgs.msg import Pose
 from geometry_msgs.msg import Point
 from geometry_msgs.msg import Quaternion
 from sensor_msgs.msg import Image
-from cv_bridge import CvBridge, CvBridgeError
-#try:
-#    import queue as Queue
-#except ImportError:
-#    import Queue as Queue
 
-#import matplotlib
-#matplotlib.use('Agg')
-#from matplotlib import pyplot as plt
 
-# roslib.load_manifest('my_package')
 trigger = True
 image_width = 640
 k_p = -0.8
 error_queue_size = 10
-#errors = Queue.Queue(maxsize=error_queue_size)
 errors = deque(maxlen=error_queue_size)
 
 def waitForTrigger():
@@ -40,17 +30,17 @@ def waitForTrigger():
         rospy.loginfo(
             "%s: No starting signal received. Waiting for message...",
             rospy.get_caller_id())
-        rospy.sleep(0.1)
+        rospy.sleep(0.2)
 
 def waitForFirstError():
     while len(list(errors)) == 0:
         rospy.loginfo(
             "%s: No initial error message received. Waiting for message...",
             rospy.get_caller_id())
-        rospy.sleep(0.1)
+        rospy.sleep(0.2)
 
 def callbackError(msg):
-    rospy.loginfo("new error: %f" % msg.data)
+    #rospy.loginfo("new error: %f" % msg.data)
     errors.appendleft(msg.data)
 
 def callbackTrigger(msg):
@@ -80,40 +70,20 @@ def control():
     err = get_latest_error()
     #rospy.loginfo("sub_error: %f" % err)
     u_t = k_p * err
-    steering = int(steering_mapping_linear(u_t))
-    if steering < 0:
-        pub_steering.publish(0)
-    elif steering > 180:
-        pub_steering.publish(180)
-    else:
-        pub_steering.publish(steering)
-
-    #pub_steering.publish(steering)
-    pub_logsteering.publish(steering)
-    #rospy.loginfo("error: %d -- steering: %d" % (err, steering))
-    rospy.loginfo("%d" % steering)
+    steering = np.clip(int(steering_mapping_linear(u_t)), 0, 180)
+    pub_steering.publish(steering)
+    pub_logsteering.publish(str(steering))
+    #rospy.loginfo("\terror: %d -- steering: %d" % (err, steering))
 
 
 rospy.init_node("controller", anonymous=True)
 
 # create subscribers and publishers
 sub_error = rospy.Subscriber("/line_param_offset", Float32, callbackError, queue_size=1)
-sub_trigger = rospy.Subscriber("/trigger_bool", Bool, callbackTrigger, queue_size=100)
+sub_trigger = rospy.Subscriber("/trigger_bool", Bool, callbackTrigger, queue_size=10)
 
-pub_steering = rospy.Publisher("steering", UInt8, queue_size=100)
-pub_logsteering = rospy.Publisher("controller/info", String, queue_size=100)
-
-# TEST
-'''
-err = -200.0
-u_t = k_p * err
-rospy.loginfo("%d" % u_t)
-steering = int(steering_mapping_linear(u_t))
-rospy.sleep(2)
-pub_steering.publish(steering)
-pub_logsteering.publish(steering)
-rospy.loginfo("error: %d -- steering: %d" % (err, steering))
-'''
+pub_steering = rospy.Publisher("steering", UInt8, queue_size=1)
+pub_logsteering = rospy.Publisher("controller/info", String, queue_size=1)
 
 
 waitForTrigger()

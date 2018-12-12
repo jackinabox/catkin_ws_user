@@ -33,15 +33,16 @@ class image_converter:
     self.bridge = CvBridge()
     self.image_sub = rospy.Subscriber("/camera/color/image_raw", Image, self.callback, queue_size=1)
     self.image_shape = [None, None]
+    self.ransac_input_threshold = 20
     self.ransac_threshold = 8
     self.numberOfIterations = 20
     self.samplerate = 0.025
-    self.valid_line_threshold = 0.5
+    self.valid_line_threshold = 0.4
     self.pub_type = {0: "mono8", 1: "bgr8"}
     self.eps = np.finfo(float).eps
 
   def pub_param(self, m, b):
-    rospy.loginfo("publishing line params...")
+    #rospy.loginfo("publishing line params...")
     my_point = Point(m, b, 0)
     self.pub_line_param.publish(my_point)
 
@@ -102,14 +103,11 @@ class image_converter:
 
   def callback(self, data):
     #rospy.loginfo("\n\t::: start callback :::")
-
+    start_time = time.time()
     try:
       cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
     except CvBridgeError as e:
       print(e)
-
-
-
 
     # make it gray
     gray = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
@@ -132,45 +130,50 @@ class image_converter:
 
     vectors = np.float32(np.array(np.nonzero(img_binary)).T)
     #rospy.loginfo("vectors"+str(vectors.shape))
-    vectors = vectors[np.random.choice(range(vectors.shape[0]), int(vectors.shape[0] * self.samplerate), replace=False)]
 
-    '''
-    point_img = self.print_points(vectors)
-    self.pub_img(self.image_bin_pub, point_img, "published initial binary image", 0)
-    '''
-    start_time = time.time()
-    line_one, inliers_one = self.ransac(vectors)
-    #rospy.loginfo(inliers)
-    #vectors_subset = vectors[inliers_one == 0]
+    # if numnber of input points is sufficient for ransac
+    if vectors.shape[0] >= self.ransac_input_threshold / self.samplerate:
+      vectors = vectors[np.random.choice(range(vectors.shape[0]), int(vectors.shape[0] * self.samplerate), replace=False)]
 
-    #point_img = self.print_points(vectors_subset)
-    #self.pub_img(self.image_bin_pub, point_img, "published reduced binary image", 0)
-
-    #line_two, _ = self.ransac(vectors_subset)
-
-    # print m & b for lines
-    #rospy.loginfo("\n\tline one: m = %f,  b = %f\n\tline two: m = %f,  b = %f" %
-    #              (line_one[0], line_one[1], line_two[0], line_two[1]))
-
-    print("--- %s seconds ---" % (time.time() - start_time))
-
-    if self.line_is_valid(inliers_one):
-      self.pub_param(line_one[0], line_one[1])
-      rospy.loginfo("%s: line params: m = %f,  b = %f" %
-                    (rospy.get_caller_id(), line_one[0], line_one[1]))
       '''
-      p_one = self.getPointsFromLine(line_one)
-      #p_two = self.getPointsFromLine(line_two)
-
-      red = (0, 0, 255)
-      green = (0, 255, 0)
-      color = green
-      thickness = 3
-      self.drawLine(cv_image, p_one, color, thickness)
-      #self.drawLine(cv_image, p_two, color, thickness)
-
-      self.pub_img(self.image_lines_pub, cv_image, "published image + lines", 1)
+      point_img = self.print_points(vectors)
+      self.pub_img(self.image_bin_pub, point_img, "published initial binary image", 0)
       '''
+      #start_time = time.time()
+      line_one, inliers_one = self.ransac(vectors)
+      #rospy.loginfo(inliers)
+      #vectors_subset = vectors[inliers_one == 0]
+
+      #point_img = self.print_points(vectors_subset)
+      #self.pub_img(self.image_bin_pub, point_img, "published reduced binary image", 0)
+
+      #line_two, _ = self.ransac(vectors_subset)
+
+      # print m & b for lines
+      #rospy.loginfo("\n\tline one: m = %f,  b = %f\n\tline two: m = %f,  b = %f" %
+      #              (line_one[0], line_one[1], line_two[0], line_two[1]))
+
+      #print("--- %s seconds ---" % (time.time() - start_time))
+
+      if self.line_is_valid(inliers_one):
+        self.pub_param(line_one[0], line_one[1])
+        rospy.loginfo("%s: line params: m = %f,  b = %f" %
+                      (rospy.get_caller_id(), line_one[0], line_one[1]))
+
+
+        p_one = self.getPointsFromLine(line_one)
+        #p_two = self.getPointsFromLine(line_two)
+  
+        red = (0, 0, 255)
+        green = (0, 255, 0)
+        color = green
+        thickness = 3
+        self.drawLine(cv_image, p_one, color, thickness)
+        #self.drawLine(cv_image, p_two, color, thickness)
+  
+        self.pub_img(self.image_lines_pub, cv_image, "published image + lines", 1)
+        print("--- %s seconds ---" % (time.time() - start_time))
+
 
 
 def main(args):
