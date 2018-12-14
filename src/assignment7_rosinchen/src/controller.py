@@ -22,7 +22,7 @@ from sensor_msgs.msg import Image
 trigger = True
 image_width = 640
 k_p = -0.8
-error_queue_size = 10
+error_queue_size = 5
 errors = deque(maxlen=error_queue_size)
 
 def waitForTrigger():
@@ -67,7 +67,7 @@ def steering_mapping_linear(val):
         return int((val + image_width//2) / image_width * 180.0)
 
 def control():
-    err = get_latest_error()
+    err = get_mean_error()
     #rospy.loginfo("sub_error: %f" % err)
     u_t = k_p * err
     steering = np.clip(int(steering_mapping_linear(u_t)), 0, 180)

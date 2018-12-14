@@ -31,13 +31,13 @@ class image_converter:
     self.pub_line_param= rospy.Publisher("/line_parameter", Point, queue_size=1)
 
     self.bridge = CvBridge()
-    self.image_sub = rospy.Subscriber("/camera/color/image_raw", Image, self.callback, queue_size=1)
+    self.image_sub = rospy.Subscriber("/camera/color/image_raw", Image, self.callback, queue_size=None)
     self.image_shape = [None, None]
     self.ransac_input_threshold = 20
     self.ransac_threshold = 8
     self.numberOfIterations = 20
     self.samplerate = 0.025
-    self.valid_line_threshold = 0.4
+    self.valid_line_threshold = 0.10
     self.pub_type = {0: "mono8", 1: "bgr8"}
     self.eps = np.finfo(float).eps
 
