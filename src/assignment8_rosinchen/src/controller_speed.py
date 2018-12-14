@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 
 # --- imports ---
-import roslib
+#import roslib
 import rospy
-import sys
-import cv2
+#import sys
+#import cv2
 import numpy as np
-from collections import deque
+#from collections import deque
 from std_msgs.msg import UInt8
 from std_msgs.msg import Int16
 from std_msgs.msg import Float32
-from nav_msgs.msg import Odometry
+#from nav_msgs.msg import Odometry
 from std_msgs.msg import String
 from std_msgs.msg import Bool
 from geometry_msgs.msg import Pose
@@ -20,28 +20,36 @@ from sensor_msgs.msg import Image
 
 
 trigger = True
-image_width = 640
-k_p = -0.8
-error_queue_size = 5
-errors = deque(maxlen=error_queue_size)
+u_init = 1.0 # initial car speed
+k_p = 1.0 # P controller
+k_d = 1.0 # D controller
+
+actual_speed = None
+actual_speed_dif = None
+target_speed = 0.3 # in m/s
+target_speed_dif = 0. # in m*s^-2
 
 def waitForTrigger():
     while trigger == False:
         rospy.loginfo(
             "%s: No starting signal received. Waiting for message...",
             rospy.get_caller_id())
-        rospy.sleep(0.2)
+        rospy.sleep(0.5)
 
-def waitForFirstError():
-    while len(list(errors)) == 0:
+def waitForFirstSpeed():
+    while actual_speed == None or actual_speed_dif == None:
         rospy.loginfo(
-            "%s: No initial error message received. Waiting for message...",
+            "%s: No initial speed message received. Waiting for message...",
             rospy.get_caller_id())
-        rospy.sleep(0.2)
+        rospy.sleep(0.5)
 
-def callbackError(msg):
-    #rospy.loginfo("new error: %f" % msg.data)
-    errors.appendleft(msg.data)
+def callback_actualSpeed(msg):
+    global actual_speed
+    actual_speed = msg.data
+
+def callback_actualSpeedDif(msg):
+    global actual_speed_dif
+    actual_speed_dif = msg.data
 
 def callbackTrigger(msg):
     rospy.loginfo("str(msg)")
@@ -49,48 +57,49 @@ def callbackTrigger(msg):
     global trigger
     trigger = msg
 
-def get_error_array():
-    return np.array(list(errors))
+#def get_error_array():
+#    return np.array(list(errors))
 
-def get_latest_error():
-    arr = get_error_array()
-    return arr[0]
+#def get_latest_error():
+#    arr = get_error_array()
+#    return arr[0]
 
-def get_mean_error():
-    arr = get_error_array()
-    return np.mean(arr)
+#def get_mean_error():
+#    arr = get_error_array()
+#    return np.mean(arr)
 
-def steering_mapping_linear(val):
-    if val == 0:
-        return 90
-    else:
-        return int((val + image_width//2) / image_width * 180.0)
+def speed_mapping(target): # input [m/s], output [car speed (~300)]
+    return 359.687*target+81.0456
 
 def control():
-    err = get_mean_error()
-    #rospy.loginfo("sub_error: %f" % err)
-    u_t = k_p * err
-    steering = np.clip(int(steering_mapping_linear(u_t)), 0, 180)
-    pub_steering.publish(steering)
+    global actual_speed
+    global actual_speed_dif
+    global target_speed
+    global target_speed_dif
+
+    speed = actual_speed
+    speed_dif = actual_speed_dif
+    #rospy.loginfo("sub_actualSpeed: %f, %f" % speed, speed_dif)
+    u_t = u_init * (k_p * (actual_speed-target_speed) + k_d * (actual_speed_dif-target_speed_dif))
+    speed_car = np.clip(speed_mapping(u_t), 0, 300)
+    pub_speed.publish(speed_car)
     pub_logsteering.publish(str(steering))
     #rospy.loginfo("\terror: %d -- steering: %d" % (err, steering))
 
-
-rospy.init_node("controller", anonymous=True)
+rospy.init_node("controller_speed", anonymous=True)
 
 # create subscribers and publishers
-sub_error = rospy.Subscriber("/line_param_offset", Float32, callbackError, queue_size=1)
+sub_actualSpeed = rospy.Subscriber("/mps", Float32, callback_actualSpeed, queue_size=1)
+sub_actualSpeed_dif = rospy.Subscriber("/mps_dif", Float32, callback_actualSpeedDif, queue_size=1)
 sub_trigger = rospy.Subscriber("/trigger_bool", Bool, callbackTrigger, queue_size=10)
 
-pub_steering = rospy.Publisher("steering", UInt8, queue_size=1)
+pub_speed = rospy.Publisher("/manual_control/speed", UInt8, queue_size=1)
 pub_logsteering = rospy.Publisher("controller/info", String, queue_size=1)
 
-
 waitForTrigger()
-waitForFirstError()
+waitForFirstSpeed()
 while trigger:
     control()
-
 
 # spin() simply keeps python from exiting until this node is stopped
 rospy.spin()
