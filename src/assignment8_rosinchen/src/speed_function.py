@@ -7,6 +7,7 @@ import numpy as np
 from std_msgs.msg import UInt8
 from std_msgs.msg import Int16
 
+
 import time
 
 ticks = 0
@@ -39,9 +40,9 @@ rospy.init_node("speed_function", anonymous=True)
 
 # create subscribers and publishers
 sub_ticks = rospy.Subscriber("/ticks", UInt8, appendingTicks, queue_size=1)
-sub_speed =  rospy.Subscriber("/manual_control/speed", Int16, queue_size=10)
+#sub_speed =  rospy.Subscriber("/manual_control/speed", Int16, queue_size=10)
 
-pub_rps = rospy.Publisher("rps", Int16, queue_size=1)
+#pub_rps = rospy.Publisher("rps", Int16, queue_size=1)
 
 pub_speed = rospy.Publisher("manual_control/speed", Int16, queue_size=1)
 
