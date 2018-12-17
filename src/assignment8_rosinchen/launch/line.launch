@@ -13,5 +13,9 @@
 		type="controller_steering.py" output="screen">
 	</node>
 
+	<node name="velocity.py" pkg="assignment8_rosinchen"
+		type="velocity.py" output="screen">
+	</node>
+
 </launch>
 

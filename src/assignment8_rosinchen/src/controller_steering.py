@@ -83,7 +83,7 @@ sub_error = rospy.Subscriber("/line_param_offset", Float32, callbackError, queue
 sub_trigger = rospy.Subscriber("/trigger_bool", Bool, callbackTrigger, queue_size=10)
 
 pub_steering = rospy.Publisher("steering", UInt8, queue_size=1)
-pub_logsteering = rospy.Publisher("controller/info", String, queue_size=1)
+pub_logsteering = rospy.Publisher("controller_steering/info", String, queue_size=1)
 
 
 waitForTrigger()
