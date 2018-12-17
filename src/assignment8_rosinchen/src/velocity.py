@@ -31,19 +31,17 @@ def countingTicks():
 	starttime = time.time()
 	ticks = 0
 
-	while time.time()-starttime<=zeitraum:
+	while time.time() - starttime <= zeitraum:
 		#rospy.loginfo("Tickabstand:"+str(ticks))
 		final = ticks
-		finaltime = time.time()-starttime 
+		finaltime = time.time() - starttime
 		rospy.sleep(0.01)
 
-	
-	
 	#print(final/finaltime)
 	return final/finaltime
 
 def get_past_array():
-    pub_speed = rospy.Publisher("manual_control/speed", Int16, queue_size=1)	
+    #pub_speed = rospy.Publisher("manual_control/speed", Int16, queue_size=1)
 	return np.array(list(past))
 
 def get_latest_past():
@@ -69,20 +67,19 @@ sub_ticks = rospy.Subscriber("/ticks", UInt8, appendingTicks, queue_size=1)
 pub_mps = rospy.Publisher("mps", Float32, queue_size=1)
 pub_mps_diff = rospy.Publisher("mps_diff", Float32, queue_size=1)
 
-pub_speed = rospy.Publisher("manual_control/speed", Int16, queue_size=1)
+#pub_speed = rospy.Publisher("manual_control/speed", Int16, queue_size=1)
 
 #Main
 
 
 
 while not rospy.is_shutdown():
-	
-	tps=countingTicks()
+	tps = countingTicks()
 	mps = tps*0.006438197857
 	past.appendleft(mps)
 	#rospy.loginfo("past:"+str(past))
 	#print(len(get_past_array()))
-	if len(get_past_array())>2:
+	if len(get_past_array()) > 2:
 		diff = get_diff_past()
 		pub_mps_diff.publish(diff)
 		#rospy.loginfo("diff:"+str(diff))
