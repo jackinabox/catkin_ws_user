@@ -43,15 +43,15 @@ def countingTicks():
 	return final/finaltime
 
 def get_past_array():
-    	pub_speed = rospy.Publisher("manual_control/speed", Int16, queue_size=1)	
+    pub_speed = rospy.Publisher("manual_control/speed", Int16, queue_size=1)	
 	return np.array(list(past))
 
 def get_latest_past():
-    	arr = get_past_array()
-    	return arr[0]
+    arr = get_past_array()
+    return arr[0]
 
 def get_mean_past():
-    	arr = get_past_array()
+    arr = get_past_array()
 	return np.mean(arr)
 
 def get_diff_past():
@@ -85,19 +85,19 @@ while not rospy.is_shutdown():
 	if len(get_past_array())>2:
 		diff = get_diff_past()
 		pub_mps_diff.publish(diff)
-		rospy.loginfo("diff:"+str(diff))
+		#rospy.loginfo("diff:"+str(diff))
 
 	rospy.loginfo("mps:"+str(mps))
 
 	pub_mps.publish(mps)
 	
-	if counter <=8:
-		counter += 1
-		print(counter)
-		pub_speed.publish(600*((counter+15.0)/20))
-	
-	if counter == 9:
-		pub_speed.publish(0)
+	#if counter <=8:
+	#	counter += 1
+	#	print(counter)
+	#	pub_speed.publish(600*((counter+15.0)/20))
+	#
+	#if counter == 9:
+	#	pub_speed.publish(0)
 
 
 

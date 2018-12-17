@@ -83,7 +83,7 @@ def control():
     u_t = target_speed + k_p * (actual_speed-target_speed) + k_d * (actual_speed_dif-target_speed_dif)
     speed_car = np.clip(speed_mapping(u_t), 0, 300)
     pub_speed.publish(speed_car)
-    pub_logsteering.publish(str(steering))
+    pub_logspeed.publish(str(steering))
     #rospy.loginfo("\terror: %d -- steering: %d" % (err, steering))
 
 rospy.init_node("controller_speed", anonymous=True)
@@ -94,7 +94,7 @@ sub_actualSpeed_dif = rospy.Subscriber("/mps_diff", Float32, callback_actualSpee
 sub_trigger = rospy.Subscriber("/trigger_bool", Bool, callbackTrigger, queue_size=10)
 
 pub_speed = rospy.Publisher("/manual_control/speed", UInt8, queue_size=1)
-pub_logsteering = rospy.Publisher("controller/info", String, queue_size=1)
+pub_logspeed = rospy.Publisher("controller_speed/info", String, queue_size=1)
 
 waitForTrigger()
 waitForFirstSpeed()
