@@ -84,7 +84,7 @@ while not rospy.is_shutdown():
 		pub_mps_diff.publish(diff)
 		#rospy.loginfo("diff:"+str(diff))
 
-	rospy.loginfo("mps:"+str(mps))
+	#rospy.loginfo("mps:"+str(mps))
 
 	pub_mps.publish(mps)
 	

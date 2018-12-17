@@ -21,9 +21,10 @@ from sensor_msgs.msg import Image
 
 trigger = True
 image_width = 640
-k_p = -0.8  #125: -0.8, #117: -0.6
-error_queue_size = 5
+k_p = -0.8  #125: -0.8, #117: -0.6  #121: 
+error_queue_size = 3
 errors = deque(maxlen=error_queue_size)
+steering_offset=20  #127: 20, 125:0, 121:0
 
 def waitForTrigger():
     while trigger == False:
@@ -62,9 +63,9 @@ def get_mean_error():
 
 def steering_mapping_linear(val):
     if val == 0:
-        return 90 #125:90, 121:110
+        return 90 + steering_offset  
     else:
-        return int((val + image_width//2) / image_width * 180.0) # 125,121 ohne offset 
+        return int((val + image_width//2) / image_width * 180.0)+steering_offset 
 
 def control():
     err = get_mean_error()

@@ -23,11 +23,15 @@ trigger = True
 u_init = 1.0 # initial car speed
 k_p = 0.1 # P controller
 k_d = 0.1 # D controller
+curve_treshold = 1
+
 
 actual_speed = None
 actual_speed_dif = None
-target_speed = 0.25 # in m/s
+target_speed = None # in m/s
+slow_curve=0.5 # ratio of target_speed 0.5=50%
 target_speed_dif = 0. # in m*s^-2
+curve=False
 
 def waitForTrigger():
     while trigger == False:
@@ -42,6 +46,25 @@ def waitForFirstSpeed():
             "%s: No initial speed message received. Waiting for message...",
             rospy.get_caller_id())
         rospy.sleep(0.5)
+    while target_speed == None:
+        rospy.loginfo(
+            "%s: No initial target speed received. (topic /target_speed) Waiting for message...",
+            rospy.get_caller_id())
+        rospy.sleep(0.5)
+
+def callbackTargetSpeed(msg):
+    global target_speed
+    target_speed = msg.data
+
+def callbackLineParameter(msg):
+    global curve
+    m = msg.x
+    #rospy.loginfo("anstieg: "+str(m))
+    store_curve=curve
+    if abs(m)>curve_treshold:
+        curve = True
+    else:
+        curve = False
 
 def callback_actualSpeed(msg):
     global actual_speed
@@ -81,7 +104,8 @@ def control():
     speed_dif = actual_speed_dif
     #rospy.loginfo("sub_actualSpeed: %f, %f" % speed, speed_dif)
     u_t = target_speed + k_p * (target_speed-actual_speed) + k_d * (target_speed_dif-actual_speed_dif)
-    speed_car = np.clip(speed_mapping(u_t), 0, 500)
+    u_t = u_t - curve*slow_curve*target_speed # slow down in curves.
+    speed_car = np.clip(speed_mapping(u_t), 0, 600)
     #rospy.loginfo("publish speed"+str(speed_car))
     pub_speed.publish(speed_car)
     pub_logspeed.publish(str(speed_car))
@@ -94,6 +118,8 @@ rospy.init_node("controller_speed", anonymous=True)
 sub_actualSpeed = rospy.Subscriber("/mps", Float32, callback_actualSpeed, queue_size=1)
 sub_actualSpeed_dif = rospy.Subscriber("/mps_diff", Float32, callback_actualSpeedDif, queue_size=1)
 sub_trigger = rospy.Subscriber("/trigger_bool", Bool, callbackTrigger, queue_size=10)
+sub_lineParam = rospy.Subscriber("/line_parameter", Point, callbackLineParameter, queue_size=10)
+sub_target = rospy.Subscriber("/target_speed", Float32, callbackTargetSpeed, queue_size=10)
 
 pub_speed = rospy.Publisher("/manual_control/speed", Int16, queue_size=1)
 pub_logspeed = rospy.Publisher("controller_speed/info", String, queue_size=1)

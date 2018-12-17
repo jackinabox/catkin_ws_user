@@ -33,19 +33,13 @@ class image_converter:
     self.bridge = CvBridge()
     self.image_sub = rospy.Subscriber("/camera/color/image_raw", Image, self.callback, queue_size=None)
     self.image_shape = [None, None]
-    self.cutoff_top = 0.5 # percentage
-    self.cutoff_bottom = 0.15 # percentage
     self.ransac_input_threshold = 20
     self.ransac_threshold = 8
     self.numberOfIterations = 20
     self.samplerate = 0.025
-    self.nb_samples = 100
-    self.valid_line_threshold = 0.08
+    self.valid_line_threshold = 0.10
     self.pub_type = {0: "mono8", 1: "bgr8"}
     self.eps = np.finfo(float).eps
-    self.img_counter = 0
-    self.img_counter_lim = 3
-
 
   def pub_param(self, m, b):
     #rospy.loginfo("publishing line params...")
@@ -107,7 +101,8 @@ class image_converter:
   def line_is_valid(self, inliers):
     return np.sum(inliers) / len(inliers) >= self.valid_line_threshold
 
-  def do_detect_line(self, data):
+  def callback(self, data):
+    #rospy.loginfo("\n\t::: start callback :::")
     start_time = time.time()
     try:
       cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
@@ -118,77 +113,67 @@ class image_converter:
     gray = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
     self.image_shape = gray.shape
 
-    # self.pub_img(self.image_grey_pub, gray, "published gray image", 0)
+    #self.pub_img(self.image_grey_pub, gray, "published gray image", 0)
 
     # make it binary
     bi_gray_max = 255
-    bi_gray_min = 200  # 245
+    bi_gray_min = 200#245
     _, img_binary = cv2.threshold(gray, bi_gray_min, bi_gray_max, cv2.THRESH_BINARY)
     dim = img_binary.shape
 
-    # img_binary[0:int(0.3*dim[0])] = 0 #Car 122
-    # img_binary[int(0.93*dim[0]):dim[0], :] = 0 #Car 122
-    img_binary[0:int(self.cutoff_top * dim[0])] = 0  # Car 125
-    img_binary[int((1 - self.cutoff_bottom) * dim[0]):dim[0], :] = 0  # Car 125
+    #img_binary[0:int(0.3*dim[0])] = 0 #Car 122
+    #img_binary[int(0.93*dim[0]):dim[0], :] = 0 #Car 122
+    img_binary[0:int(0.3*dim[0])] = 0 #Car 125
+    img_binary[int(0.85*dim[0]):dim[0], :] = 0 #Car 125
 
-    # self.pub_img(self.image_bin_pub, img_binary, "published binary image", 0)
+    #self.pub_img(self.image_bin_pub, img_binary, "published binary image", 0)
 
     vectors = np.float32(np.array(np.nonzero(img_binary)).T)
-    # rospy.loginfo("vectors"+str(vectors.shape))
+    #rospy.loginfo("vectors"+str(vectors.shape))
 
     # if numnber of input points is sufficient for ransac
-    # if vectors.shape[0] >= self.ransac_input_threshold / self.samplerate:
-    if vectors.shape[0] >= self.ransac_input_threshold:
-      vectors = vectors[
-        np.random.choice(range(vectors.shape[0]), np.clip(vectors.shape[0], 0, self.nb_samples), replace=False)]
-      # print("samples: "+str(np.clip(vectors.shape[0], 0, self.nb_samples)))
+    if vectors.shape[0] >= self.ransac_input_threshold / self.samplerate:
+      vectors = vectors[np.random.choice(range(vectors.shape[0]), int(vectors.shape[0] * self.samplerate), replace=False)]
 
       '''
       point_img = self.print_points(vectors)
       self.pub_img(self.image_bin_pub, point_img, "published initial binary image", 0)
       '''
-      # start_time = time.time()
+      #start_time = time.time()
       line_one, inliers_one = self.ransac(vectors)
-      # rospy.loginfo(inliers)
-      # vectors_subset = vectors[inliers_one == 0]
+      #rospy.loginfo(inliers)
+      #vectors_subset = vectors[inliers_one == 0]
 
-      # point_img = self.print_points(vectors_subset)
-      # self.pub_img(self.image_bin_pub, point_img, "published reduced binary image", 0)
+      #point_img = self.print_points(vectors_subset)
+      #self.pub_img(self.image_bin_pub, point_img, "published reduced binary image", 0)
 
-      # line_two, _ = self.ransac(vectors_subset)
+      #line_two, _ = self.ransac(vectors_subset)
 
       # print m & b for lines
-      # rospy.loginfo("\n\tline one: m = %f,  b = %f\n\tline two: m = %f,  b = %f" %
+      #rospy.loginfo("\n\tline one: m = %f,  b = %f\n\tline two: m = %f,  b = %f" %
       #              (line_one[0], line_one[1], line_two[0], line_two[1]))
 
-      # print("--- %s seconds ---" % (time.time() - start_time))
+      #print("--- %s seconds ---" % (time.time() - start_time))
 
       if self.line_is_valid(inliers_one):
         self.pub_param(line_one[0], line_one[1])
         #rospy.loginfo("%s: line params: m = %f,  b = %f" %
         #              (rospy.get_caller_id(), line_one[0], line_one[1]))
 
-        p_one = self.getPointsFromLine(line_one)
-        # p_two = self.getPointsFromLine(line_two)
 
+        p_one = self.getPointsFromLine(line_one)
+        #p_two = self.getPointsFromLine(line_two)
+  
         red = (0, 0, 255)
         green = (0, 255, 0)
         color = green
         thickness = 3
         self.drawLine(cv_image, p_one, color, thickness)
-        # self.drawLine(cv_image, p_two, color, thickness)
-
+        #self.drawLine(cv_image, p_two, color, thickness)
+  
         self.pub_img(self.image_lines_pub, cv_image, "published image + lines", 1)
-        #print("--- %s seconds ---" % (time.time() - start_time))
+        print("--- %s seconds ---" % (time.time() - start_time))
 
-  def callback(self, data):
-    #rospy.loginfo("\n\t::: start callback :::")
-    if self.img_counter < self.img_counter_lim:
-      self.img_counter += 1
-      return
-    else:
-      self.img_counter = 0
-      self.do_detect_line(data)
 
 
 def main(args):
