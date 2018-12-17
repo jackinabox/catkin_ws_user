@@ -41,15 +41,15 @@ def countingTicks():
 	return final/finaltime
 
 def get_past_array():
-    #pub_speed = rospy.Publisher("manual_control/speed", Int16, queue_size=1)
+	#pub_speed = rospy.Publisher("manual_control/speed", Int16, queue_size=1)
 	return np.array(list(past))
 
 def get_latest_past():
-    arr = get_past_array()
-    return arr[0]
+	arr = get_past_array()
+	return arr[0]
 
 def get_mean_past():
-    arr = get_past_array()
+	arr = get_past_array()
 	return np.mean(arr)
 
 def get_diff_past():
