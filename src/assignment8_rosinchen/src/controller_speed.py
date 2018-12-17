@@ -21,12 +21,12 @@ from sensor_msgs.msg import Image
 
 trigger = True
 u_init = 1.0 # initial car speed
-k_p = 1.0 # P controller
-k_d = 1.0 # D controller
+k_p = 0.1 # P controller
+k_d = 0.1 # D controller
 
 actual_speed = None
 actual_speed_dif = None
-target_speed = 0.3 # in m/s
+target_speed = 0.25 # in m/s
 target_speed_dif = 0. # in m*s^-2
 
 def waitForTrigger():
@@ -80,11 +80,13 @@ def control():
     speed = actual_speed
     speed_dif = actual_speed_dif
     #rospy.loginfo("sub_actualSpeed: %f, %f" % speed, speed_dif)
-    u_t = target_speed + k_p * (actual_speed-target_speed) + k_d * (actual_speed_dif-target_speed_dif)
-    speed_car = np.clip(speed_mapping(u_t), 0, 300)
+    u_t = target_speed + k_p * (target_speed-actual_speed) + k_d * (target_speed_dif-actual_speed_dif)
+    speed_car = np.clip(speed_mapping(u_t), 0, 500)
+    rospy.loginfo("publish speed"+str(speed_car))
     pub_speed.publish(speed_car)
-    pub_logspeed.publish(str(steering))
+    pub_logspeed.publish(str(speed_car))
     #rospy.loginfo("\terror: %d -- steering: %d" % (err, steering))
+    rospy.sleep(0.1)
 
 rospy.init_node("controller_speed", anonymous=True)
 
@@ -93,12 +95,12 @@ sub_actualSpeed = rospy.Subscriber("/mps", Float32, callback_actualSpeed, queue_
 sub_actualSpeed_dif = rospy.Subscriber("/mps_diff", Float32, callback_actualSpeedDif, queue_size=1)
 sub_trigger = rospy.Subscriber("/trigger_bool", Bool, callbackTrigger, queue_size=10)
 
-pub_speed = rospy.Publisher("/manual_control/speed", UInt8, queue_size=1)
+pub_speed = rospy.Publisher("/manual_control/speed", Int16, queue_size=1)
 pub_logspeed = rospy.Publisher("controller_speed/info", String, queue_size=1)
 
 waitForTrigger()
 waitForFirstSpeed()
-while trigger:
+while trigger and not rospy.is_shutdown():
     control()
 
 # spin() simply keeps python from exiting until this node is stopped

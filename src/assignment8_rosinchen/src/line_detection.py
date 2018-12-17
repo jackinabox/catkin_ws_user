@@ -78,7 +78,7 @@ class image_converter:
     return edge
 
   def ransac(self, points):
-    rospy.loginfo("points_dim: %s" % str(points.shape))
+    #rospy.loginfo("points_dim: %s" % str(points.shape))
     results = np.zeros((self.numberOfIterations, 3))
     inliersOfIterations = {}
     for iter in range(self.numberOfIterations):
@@ -157,8 +157,8 @@ class image_converter:
 
       if self.line_is_valid(inliers_one):
         self.pub_param(line_one[0], line_one[1])
-        rospy.loginfo("%s: line params: m = %f,  b = %f" %
-                      (rospy.get_caller_id(), line_one[0], line_one[1]))
+        #rospy.loginfo("%s: line params: m = %f,  b = %f" %
+        #              (rospy.get_caller_id(), line_one[0], line_one[1]))
 
 
         p_one = self.getPointsFromLine(line_one)
@@ -172,7 +172,7 @@ class image_converter:
         #self.drawLine(cv_image, p_two, color, thickness)
   
         self.pub_img(self.image_lines_pub, cv_image, "published image + lines", 1)
-        print("--- %s seconds ---" % (time.time() - start_time))
+        #print("--- %s seconds ---" % (time.time() - start_time))
 
 
 

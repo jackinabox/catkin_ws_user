@@ -88,7 +88,7 @@ pub_logsteering = rospy.Publisher("controller_steering/info", String, queue_size
 
 waitForTrigger()
 waitForFirstError()
-while trigger:
+while trigger and not rospy.is_shutdown():
     control()
 
 

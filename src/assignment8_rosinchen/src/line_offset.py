@@ -21,7 +21,7 @@ def callback(msg):
 	b = msg.y
 	abstand_linie = abstand(m, b)
 	pub.publish(abstand_linie)
-	rospy.loginfo("%s: published line offset: %f" % (rospy.get_caller_id(), abstand_linie))
+	#rospy.loginfo("%s: published line offset: %f" % (rospy.get_caller_id(), abstand_linie))
 
 
 rospy.init_node('line_offset', anonymous=True)
