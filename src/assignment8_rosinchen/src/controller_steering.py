@@ -76,7 +76,7 @@ def control():
     #rospy.loginfo("\terror: %d -- steering: %d" % (err, steering))
 
 
-rospy.init_node("controller", anonymous=True)
+rospy.init_node("controller_steering", anonymous=True)
 
 # create subscribers and publishers
 sub_error = rospy.Subscriber("/line_param_offset", Float32, callbackError, queue_size=1)
