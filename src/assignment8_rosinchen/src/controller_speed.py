@@ -82,7 +82,7 @@ def control():
     #rospy.loginfo("sub_actualSpeed: %f, %f" % speed, speed_dif)
     u_t = target_speed + k_p * (target_speed-actual_speed) + k_d * (target_speed_dif-actual_speed_dif)
     speed_car = np.clip(speed_mapping(u_t), 0, 500)
-    rospy.loginfo("publish speed"+str(speed_car))
+    #rospy.loginfo("publish speed"+str(speed_car))
     pub_speed.publish(speed_car)
     pub_logspeed.publish(str(speed_car))
     #rospy.loginfo("\terror: %d -- steering: %d" % (err, steering))

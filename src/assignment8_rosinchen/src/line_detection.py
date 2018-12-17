@@ -172,7 +172,7 @@ class image_converter:
         #self.drawLine(cv_image, p_two, color, thickness)
   
         self.pub_img(self.image_lines_pub, cv_image, "published image + lines", 1)
-        #print("--- %s seconds ---" % (time.time() - start_time))
+        print("--- %s seconds ---" % (time.time() - start_time))
 
 
 
