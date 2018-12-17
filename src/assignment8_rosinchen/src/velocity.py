@@ -1,5 +1,3 @@
-#m/s(auto) = (0.43182798*auto-34.99777655 )*0.0064381978570000001
-
 #!/usr/bin/env python
 
 # --- imports ---
@@ -17,8 +15,9 @@ import time
 
 ticks = 0
 zeitraum = 0.5
-past_queue_size = 5
+past_queue_size = 3
 past = deque(maxlen=past_queue_size)
+counter = 0
 
 
 
@@ -44,7 +43,8 @@ def countingTicks():
 	return final/finaltime
 
 def get_past_array():
-    	return np.array(list(past))
+    	pub_speed = rospy.Publisher("manual_control/speed", Int16, queue_size=1)	
+	return np.array(list(past))
 
 def get_latest_past():
     	arr = get_past_array()
@@ -57,7 +57,7 @@ def get_mean_past():
 def get_diff_past():
 	arr = get_past_array()
 	grad = np.gradient(arr)
-	mean = np.mean(grad)
+	mean = -np.mean(grad)
 	return mean
 	
 
@@ -68,6 +68,8 @@ rospy.init_node("velocity", anonymous=True)
 sub_ticks = rospy.Subscriber("/ticks", UInt8, appendingTicks, queue_size=1)
 pub_mps = rospy.Publisher("mps", Float32, queue_size=1)
 pub_mps_diff = rospy.Publisher("mps_diff", Float32, queue_size=1)
+
+pub_speed = rospy.Publisher("manual_control/speed", Int16, queue_size=1)
 
 #Main
 
@@ -89,7 +91,13 @@ while not rospy.is_shutdown():
 
 	pub_mps.publish(mps)
 	
-
+	if counter <=8:
+		counter += 1
+		print(counter)
+		pub_speed.publish(600*((counter+15.0)/20))
+	
+	if counter == 9:
+		pub_speed.publish(0)
 
 
 
@@ -97,7 +105,7 @@ while not rospy.is_shutdown():
 
 # spin() simply keeps python from exiting until this node is stopped
 rospy.spin()
-
+#m/s(auto) = (0.43182798*auto-34.99777655 )*0.0064381978570000001
 
 
 
