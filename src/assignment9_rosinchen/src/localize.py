@@ -14,7 +14,7 @@ carID=7
 import numpy as np
 
 location = np.array([])
-nearest_point_data = np.array([])
+location_corr = np.array([])
 
 centers = np.array([[196,215.5],[405,215.5]]) /100# upper, lower
 lines   = np.array([[[196,95],[405,95]],[[196,336],[405,336]]])	/100
@@ -45,16 +45,16 @@ def nearest_point(given_point):
 
 def callback(data):
 	global location 
-	global nearest_point_data
+	global location_corr
 	x,y = data.pose.pose.position.x,data.pose.pose.position.y
 	#print("x,y:",x,y)
 	print(nearest_point((x,y))," ",x,y)
 	location = np.append(location,([x,y]))
-	nearest_point = np.append(nearest_point_data,(nearest_point((x,y))))
+	location_corr = np.append(location_corr,(nearest_point((x,y))))
 	#rospy.loginfo("x,y:",data)
 	#print(location)
 	np.save("location.npy", location)
-	np.save("nearest_point.npy", nearest_point_data)
+	np.save("nearest_point.npy", location_corr)
 
 rospy.init_node("localize", anonymous=True)
 
