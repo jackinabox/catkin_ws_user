@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<launch>
+
+	<node name="line_detection.py" pkg="assignment9_rosinchen"
+		type="line_detection.py" output="screen">
+	</node>
+
+	<node name="line_offset.py" pkg="assignment9_rosinchen"
+		type="line_offset.py" output="screen">
+	</node>
+
+	<node name="controller_steering.py" pkg="assignment9_rosinchen"
+		type="controller_steering.py" output="screen">
+	</node>
+
+	<node name="velocity.py" pkg="assignment9_rosinchen"
+		type="velocity.py" output="screen">
+	</node>
+
+	<node name="controller_speed.py" pkg="assignment9_rosinchen"
+		type="controller_speed.py" output="screen">
+	</node>
+    
+</launch>
+
