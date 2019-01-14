@@ -1,13 +1,7 @@
-#!/usr/bin/env python
-
-import rospy
 import numpy as np
-from geometry_msgs.msg import Point
-from nav_msgs.msg import Odometry
+import matplotlib.pyplot as plt
 
-carID = 7
-location = np.array([])
-location_corr = np.array([])
+ort_mess = np.load("location.npy")
 
 # Model
 centers = np.array([[196, 215.5], [405, 215.5]]) / 100.0  # upper, lower
@@ -15,8 +9,9 @@ lines = np.array([[[196, 95], [405, 95]], [[196, 336], [405, 336]]]) / 100.0
 radius = 120.5 / 100
 
 
-def nearest_point(given_point):
-	x, y = given_point
+def nearest_point(x, y):
+	given_point = (x, y)
+
 	if x < centers[0, 0]:  # upper semicircle
 		vec_center_given = given_point - centers[0]
 		vec_circle = vec_center_given * radius/np.linalg.norm(vec_center_given)
@@ -37,29 +32,21 @@ def nearest_point(given_point):
 		print("ERROR in choice of track part!")
 
 
-def callback(data):
-	global location 
-	global location_corr
-	x, y = data.pose.pose.position.x, data.pose.pose.position.y
-	#print("x,y:",x,y)
-	print(nearest_point((x, y)), " ", x, y)
-	location = np.append(location, ([x, y]))
-	location_corr = np.append(location_corr, (nearest_point((x, y))))
-	#rospy.loginfo("x,y:",data)
-	#print(location)
-	np.save("location.npy", location)
-	np.save("nearest_point.npy", location_corr)
+ort_mess = ort_mess.reshape((len(ort_mess)/2, 2))
+ort_theo = np.zeros(ort_mess.shape)
+# print(ort_theo.shape)
 
+for i in range(len(ort_mess)):
+	ort_theo[i, :] = nearest_point(ort_mess[i, 0], ort_mess[i, 1])
 
-rospy.init_node("localize", anonymous=True)
+plt.scatter(ort_mess[:, 0], ort_mess[:, 1], s=1, marker="o")
+plt.scatter(ort_theo[:, 0], ort_theo[:, 1], s=1, marker="+")
+plt.show()
 
-# create subscribers and publishers
-sub_pos = rospy.Subscriber("/localization/odom/"+str(carID), Odometry, callback, queue_size=1)
+print("Avg. abs. dist.: %f" % np.mean(np.abs(ort_mess-ort_theo)))
+print("Avg. squared dist. %f" % np.mean((ort_theo-ort_mess)**2))
 
-rospy.spin()
-
-
-
-
-
-
+print(nearest_point(0, 0))
+print(nearest_point(2, 4))
+print(nearest_point(1, 3))
+print(nearest_point(2, 2))
