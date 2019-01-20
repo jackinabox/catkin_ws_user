@@ -44,7 +44,7 @@ plt.scatter(ort_theo[:, 0], ort_theo[:, 1], s=1, marker="+")
 plt.show()
 
 print("Avg. abs. dist.: %f" % np.mean(np.abs(ort_mess-ort_theo)))
-print("Avg. squared dist. %f" % np.mean((ort_theo-ort_mess)**2))
+print("Avg. squared dist.: %f" % np.mean((ort_theo-ort_mess)**2))
 
 print(nearest_point(0, 0))
 print(nearest_point(2, 4))
