@@ -23,7 +23,7 @@ location_corr = np.array([])
 def callback_target(data):
 	global location
 	global location_corr
-	x, y = data.pose.pose.position.x + setup.gps_offset[0], data.pose.pose.position.y + setup.gps_offset[1]
+	x, y = data.pose.pose.position.x, data.pose.pose.position.y
 	if logging:
 		print("position:       ", x, y)
 	p_ahead = model.look_ahead((x, y), distance)
