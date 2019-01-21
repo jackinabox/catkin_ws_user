@@ -18,13 +18,13 @@ from geometry_msgs.msg import Point
 from geometry_msgs.msg import Quaternion
 from sensor_msgs.msg import Image
 
+
 trigger = True
 image_width = 640
-k_p = -0.8  # 125: -0.8, #117: -0.6  #121:
+k_p = -0.8  #125: -0.8, #117: -0.6  #121: 
 error_queue_size = 3
 errors = deque(maxlen=error_queue_size)
-steering_offset = 20  # 127: 20, 125:0, 121:0
-
+steering_offset=20  #127: 20, 125:0, 121:0
 
 def waitForTrigger():
     while trigger == False:
@@ -33,7 +33,6 @@ def waitForTrigger():
             rospy.get_caller_id())
         rospy.sleep(0.2)
 
-
 def waitForFirstError():
     while len(list(errors)) == 0:
         rospy.loginfo(
@@ -41,11 +40,9 @@ def waitForFirstError():
             rospy.get_caller_id())
         rospy.sleep(0.2)
 
-
 def callbackError(msg):
-    # rospy.loginfo("new error: %f" % msg.data)
+    #rospy.loginfo("new error: %f" % msg.data)
     errors.appendleft(msg.data)
-
 
 def callbackTrigger(msg):
     rospy.loginfo("str(msg)")
@@ -53,36 +50,31 @@ def callbackTrigger(msg):
     global trigger
     trigger = msg
 
-
 def get_error_array():
     return np.array(list(errors))
-
 
 def get_latest_error():
     arr = get_error_array()
     return arr[0]
 
-
 def get_mean_error():
     arr = get_error_array()
     return np.mean(arr)
 
-
 def steering_mapping_linear(val):
     if val == 0:
-        return 90 + steering_offset
+        return 90 + steering_offset  
     else:
-        return int((val + image_width // 2) / image_width * 180.0) + steering_offset
-
+        return int((val + image_width//2) / image_width * 180.0)+steering_offset 
 
 def control():
     err = get_mean_error()
-    # rospy.loginfo("sub_error: %f" % err)
+    #rospy.loginfo("sub_error: %f" % err)
     u_t = k_p * err
     steering = np.clip(int(steering_mapping_linear(u_t)), 0, 180)
     pub_steering.publish(steering)
     pub_logsteering.publish(str(steering))
-    # rospy.loginfo("\terror: %d -- steering: %d" % (err, steering))
+    #rospy.loginfo("\terror: %d -- steering: %d" % (err, steering))
 
 
 rospy.init_node("controller_steering", anonymous=True)
@@ -94,10 +86,15 @@ sub_trigger = rospy.Subscriber("/trigger_bool", Bool, callbackTrigger, queue_siz
 pub_steering = rospy.Publisher("steering", UInt8, queue_size=1)
 pub_logsteering = rospy.Publisher("controller_steering/info", String, queue_size=1)
 
+
 waitForTrigger()
 waitForFirstError()
 while trigger and not rospy.is_shutdown():
     control()
 
+
 # spin() simply keeps python from exiting until this node is stopped
 rospy.spin()
+
+
+

@@ -18,78 +18,83 @@ from geometry_msgs.msg import Point
 from geometry_msgs.msg import Quaternion
 from sensor_msgs.msg import Image
 
+
 carID = 5
 
 print("I'm starting up!")
 
-desired_position = np.array([1.96, 2.155])
-
+desired_position = np.array([1.96,2.155])
 
 def callback_position(data):
-    global desired_position
-    x, y, w, z = data.pose.pose.position.x, data.pose.pose.position.y, data.pose.pose.orientation.w, data.pose.pose.orientation.z
-    # print("x,y,w:",x,y,w)
-    current_position = np.array([x, y])
+	global desired_position
+	x, y, w, z= data.pose.pose.position.x, data.pose.pose.position.y, data.pose.pose.orientation.w, data.pose.pose.orientation.z
+	#print("x,y,w:",x,y,w)
+	current_position = np.array([x,y])
 
-    print("CurrPos:", current_position)
+	print("CurrPos:",current_position)
 
-    orientation_angle = 2 * np.arccos(w) * np.sign(z)
+	orientation_angle = 2*np.arccos(w)*np.sign(z)
+		
+	
+	orientation_vector = np.array([np.cos(orientation_angle),np.sin(orientation_angle)]) 
+	
+	print("Despos: ", desired_position)
+	print("Orientation: ",orientation_vector)
+	print("Orientation_Angle:",orientation_angle)
 
-    orientation_vector = np.array([np.cos(orientation_angle), np.sin(orientation_angle)])
+	origin_vector = current_position + np.array([0.3*np.cos(orientation_angle),0.3*np.sin(orientation_angle)])
+	
+	print("Origin:", origin_vector)
 
-    print("Despos: ", desired_position)
-    print("Orientation: ", orientation_vector)
-    print("Orientation_Angle:", orientation_angle)
+	desired_direction = desired_position-origin_vector
 
-    origin_vector = current_position + np.array([0.3 * np.cos(orientation_angle), 0.3 * np.sin(orientation_angle)])
+	print("DesDirect: ", desired_direction)
+	print("TEST: ",np.dot(orientation_vector,desired_direction)/(np.linalg.norm(orientation_vector)*np.linalg.norm(desired_direction)))
 
-    print("Origin:", origin_vector)
+	steering_angle_temp = np.arccos(np.dot(orientation_vector,desired_direction)/(np.linalg.norm(orientation_vector)*np.linalg.norm(desired_direction)))
+	#print("Steering: ",steering_angle_temp)
+	#if steering_angle_temp <= np.pi:
+	#	steering_angle_temp=
+	steering_angle = (steering_angle_temp)/(np.pi)*180
 
-    desired_direction = desired_position - origin_vector
+	orientation_vector = np.array([orientation_vector[0],orientation_vector[1],0])
+	desired_direction = np.array([desired_direction[0],desired_direction[1],0])
 
-    print("DesDirect: ", desired_direction)
-    print("TEST: ", np.dot(orientation_vector, desired_direction) / (
-                np.linalg.norm(orientation_vector) * np.linalg.norm(desired_direction)))
+	orientation=np.cross(orientation_vector,desired_direction)[2]
 
-    steering_angle_temp = np.arccos(np.dot(orientation_vector, desired_direction) / (
-                np.linalg.norm(orientation_vector) * np.linalg.norm(desired_direction)))
-    # print("Steering: ",steering_angle_temp)
-    # if steering_angle_temp <= np.pi:
-    #	steering_angle_temp=
-    steering_angle = (steering_angle_temp) / (np.pi) * 180
+	#print(orientation)
+	
+	#print("SteeringAngle: ",steering_angle*np.sign(orientation))
+	
 
-    orientation_vector = np.array([orientation_vector[0], orientation_vector[1], 0])
-    desired_direction = np.array([desired_direction[0], desired_direction[1], 0])
+	steering_angle_final = 180-(np.clip(steering_angle*np.sign(orientation),-90,90)+90)
+	print(180-(steering_angle*np.sign(orientation)+90))
+	print(steering_angle_final)
+	print(np.linalg.norm(desired_direction))
+	print(" ")
+	pub_steering.publish(steering_angle_final)
 
-    orientation = np.cross(orientation_vector, desired_direction)[2]
-
-    # print(orientation)
-
-    # print("SteeringAngle: ",steering_angle*np.sign(orientation))
-
-    steering_angle_final = 180 - (np.clip(steering_angle * np.sign(orientation), -90, 90) + 90)
-    print(180 - (steering_angle * np.sign(orientation) + 90))
-    print(steering_angle_final)
-    print(np.linalg.norm(desired_direction))
-    print(" ")
-    pub_steering.publish(steering_angle_final)
-
-
-# rospy.sleep(1)
-
-
+	#rospy.sleep(1)
+	
+	
 def callback_update_destiny(data):
-    global desired_position
-    desired_position = np.array([data.x, data.y])
+	global desired_position
+	desired_position = np.array([data.x,data.y]) 
 
 
 rospy.init_node("desired_steering", anonymous=True)
 
 # create subscribers and publishers
-sub_pos = rospy.Subscriber("/localization/odom/" + str(carID), Odometry, callback_position, queue_size=1)
+sub_pos = rospy.Subscriber("/localization/odom/"+str(carID), Odometry, callback_position, queue_size=1)
 sub_des = rospy.Subscriber("/target_point", Point, callback_update_destiny, queue_size=1)
 
 pub_steering = rospy.Publisher("steering", UInt8, queue_size=1)
-pub_speed = rospy.Publisher("/speed", UInt8, queue_size=1)
+#pub_speed = rospy.Publisher("/speed", UInt8, queue_size=1)
+
 
 rospy.spin()
+
+
+ 
+
+
