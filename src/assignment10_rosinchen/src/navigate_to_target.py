@@ -32,29 +32,29 @@ desired_position = np.array([1.96, 2.155])
 
 def callback_position(data):
     global desired_position
-    x, y, w, z = data.pose.pose.position.x, data.pose.pose.position.y, data.pose.pose.orientation.w, data.pose.pose.orientation.z
+    x, y, w, z = data.pose.pose.position.x+setup.gps_offset[0], data.pose.pose.position.y+setup.gps_offset[1], data.pose.pose.orientation.w, data.pose.pose.orientation.z
     # print("x,y,w:",x,y,w)
     current_position = np.array([x, y])
 
-    print("CurrPos:", current_position)
+    #print("CurrPos:", current_position)
 
     orientation_angle = 2 * np.arccos(w) * np.sign(z)
 
     orientation_vector = np.array([np.cos(orientation_angle), np.sin(orientation_angle)])
 
-    print("Despos: ", desired_position)
-    print("Orientation: ", orientation_vector)
-    print("Orientation_Angle:", orientation_angle)
+    #print("Despos: ", desired_position)
+    #print("Orientation: ", orientation_vector)
+    #print("Orientation_Angle:", orientation_angle)
 
     origin_vector = current_position + np.array([0.3 * np.cos(orientation_angle), 0.3 * np.sin(orientation_angle)])
 
-    print("Origin:", origin_vector)
+    #print("Origin:", origin_vector)
 
     desired_direction = desired_position - origin_vector
 
-    print("DesDirect: ", desired_direction)
-    print("TEST: ", np.dot(orientation_vector, desired_direction) / (
-            np.linalg.norm(orientation_vector) * np.linalg.norm(desired_direction)))
+    #print("DesDirect: ", desired_direction)
+    #print("TEST: ", np.dot(orientation_vector, desired_direction) / (
+    #        np.linalg.norm(orientation_vector) * np.linalg.norm(desired_direction)))
 
     steering_angle_temp = np.arccos(np.dot(orientation_vector, desired_direction) / (
             np.linalg.norm(orientation_vector) * np.linalg.norm(desired_direction)))
@@ -70,14 +70,16 @@ def callback_position(data):
 
     # print(orientation)
 
-    # print("SteeringAngle: ",steering_angle*np.sign(orientation))
+    #print("SteeringAngle: ",steering_angle)#*np.sign(orientation))
 
-    steering_angle_final = 180 - (np.clip(steering_angle * np.sign(orientation), -90, 90) + 90)
-    print(180 - (steering_angle * np.sign(orientation) + 90))
-    print(steering_angle_final)
-    print(np.linalg.norm(desired_direction))
-    print(" ")
+    #steering_angle_final = 180 - (np.clip(steering_angle * np.sign(orientation), -90, 90) + 90)
+    steering_angle_final = np.clip(steering_angle * np.sign(orientation)*(-2)+90, 0, 180)
+    #print(180 - (steering_angle * np.sign(orientation) + 90))
+    #print(steering_angle_final)
+    #print(np.linalg.norm(desired_direction))
+    #print(" ")
     pub_steering.publish(steering_angle_final)
+    print("final steering angle",steering_angle_final," , publish "+str(np.round(steering_angle_final,2)))
 
     if steering_angle_final > 90 + curve_angle or steering_angle_final < 90 - curve_angle:
         pub_speed.publish(target_speed * slow_curve)

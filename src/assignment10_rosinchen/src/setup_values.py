@@ -12,3 +12,4 @@ class Setup:
         self.laneID = 0
         self.logging = False
         # rospy.loginfo("initial setup:\n")
+        self.gps_offset=[-0.03,-0.015]
