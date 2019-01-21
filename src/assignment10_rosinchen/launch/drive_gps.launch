@@ -9,8 +9,8 @@
 		type="controller_gps_steering.py" output="screen">
 	</node>    
 
-	<node name="nexpointorientation.py" pkg="assignment10_rosinchen"
-		type="nexpointorientation.py" output="screen">
+	<node name="nextpointorientation.py" pkg="assignment10_rosinchen"
+		type="nextpointorientation.py" output="screen">
 	</node>    
 	
 	<node name="master_discovery" pkg="master_discovery_fkie" type="master_discovery" output="screen"/>
