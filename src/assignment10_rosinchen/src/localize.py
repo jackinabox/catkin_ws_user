@@ -23,9 +23,9 @@ def callback(data):
     global location
     global location_corr
     x, y = data.pose.pose.position.x, data.pose.pose.position.y
-    print("position:       ", x, y)
+    #print("position:       ", x, y)
     p_ahead = model.look_ahead((x, y), distance)
-    print("p_ahead", p_ahead)
+    #print("p_ahead", p_ahead)
     to_pub = Point(p_ahead[0], p_ahead[1], 0)
     # print("ahead:          ",to_pub.x,to_pub.y)
     # print("    ------------------")
