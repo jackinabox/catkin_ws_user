@@ -23,8 +23,7 @@ class Track:
 
 		self.logging = logging
 
-		self.Lanes = {0: "outer lane",
-					  1: "inner lane"}
+		self.Lanes = {0: "outer lane", 1: "inner lane"}
 
 	def switch_lane(self):
 		curr_lane = self.current_lane
