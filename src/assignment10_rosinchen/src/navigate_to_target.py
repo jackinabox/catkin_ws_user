@@ -36,12 +36,15 @@ past_queue_size_velo = 5
 past_angle = deque(maxlen=past_queue_size_angle)
 past_angle_velo = deque(maxlen=past_queue_size_velo)
 
+
 def get_past_array(a):
 	return np.array(list(a))
+
 
 def get_mean_past(b):
 	arr = get_past_array(b)
 	return np.mean(arr)
+
 
 def callback_position(data):
 	global desired_position
@@ -82,38 +85,38 @@ def callback_position(data):
 
 	orientation = np.cross(orientation_vector, desired_direction)[2]
 
-
 	# print("SteeringAngle: ",steering_angle)#*np.sign(orientation))
 
-    #steering_angle_final = 180 - (np.clip(steering_angle * np.sign(orientation), -90, 90) + 90)
-    steering_angle_final = np.clip(steering_angle * np.sign(orientation)*(-2)+90, 0, 180)
-    #print(180 - (steering_angle * np.sign(orientation) + 90))
-    #print(steering_angle_final)
-    #print(np.linalg.norm(desired_direction))
-    #print(" ")
+	# steering_angle_final = 180 - (np.clip(steering_angle * np.sign(orientation), -90, 90) + 90)
+	steering_angle_final = np.clip(steering_angle * np.sign(orientation) * (-2) + 90, 0, 180)
+	# print(180 - (steering_angle * np.sign(orientation) + 90))
+	# print(steering_angle_final)
+	# print(np.linalg.norm(desired_direction))
+	# print(" ")
 
-    past_angle.appendleft(steering_angle_final) 
-    past_angle_velo.appendleft(steering_angle_final) 
-	
-    pub_steering.publish(get_mean_past(past_angle))
-	
+	past_angle.appendleft(steering_angle_final)
+	past_angle_velo.appendleft(steering_angle_final)
 
-    #print("final steering angle",steering_angle_final," , publish "+str(np.round(steering_angle_final,2)))
+	pub_steering.publish(get_mean_past(past_angle))
 
-    if not is_shutdown:
-        if get_mean_past(past_angle_velo) > 90 + curve_angle or get_mean_past(past_angle_velo) < 90 - curve_angle :
-            pub_speed.publish(target_speed * slow_curve)
-        else:
-            pub_speed.publish(target_speed)
+	# print("final steering angle",steering_angle_final," , publish "+str(np.round(steering_angle_final,2)))
+
+	if not is_shutdown:
+		if get_mean_past(past_angle_velo) > 90 + curve_angle or get_mean_past(past_angle_velo) < 90 - curve_angle:
+			pub_speed.publish(target_speed * slow_curve)
+		else:
+			pub_speed.publish(target_speed)
 
 
 def when_shutdown():
-    print("SHUTTING DOWN")
-    global is_shutdown
-    is_shutdown = True
-    pub_speed.publish(0.0)
+	print("SHUTTING DOWN")
+	global is_shutdown
+	is_shutdown = True
+	pub_speed.publish(0.0)
+
 
 rospy.on_shutdown(when_shutdown)
+
 
 def callback_update_destiny(data):
 	global desired_position

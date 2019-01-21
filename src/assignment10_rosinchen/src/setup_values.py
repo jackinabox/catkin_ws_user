@@ -8,7 +8,7 @@ class Setup:
 		self.carID = 5
 		self.target_speed = 450
 		self.curve_angle = 30
-		self.slowdown_curve = 0.66
+		self.slowdown_curve = 0.75
 		self.laneID = 0
 		self.logging = False
 		self.gps_offset = [-0.03, -0.015]
