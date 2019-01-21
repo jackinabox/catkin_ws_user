@@ -23,16 +23,21 @@ class Track:
 
         self.logging = logging
 
+        self.Lanes = {0: "outer lane",
+                      1: "inner lane"}
+
     def switch_lane(self):
         curr_lane = self.current_lane
-        self.current_lane = (curr_lane + 1) % 2
+        updated_lane = (curr_lane + 1) % 2
+        self.current_lane = updated_lane
         if self.logging:
-            print("switched to lane %d" % self.current_lane)
+            print("switched to %s (%d)" % (self.Lanes[updated_lane], updated_lane))
 
     def set_lane(self, new_lane):
+        assert (new_lane in [0, 1]), "choose lane 0 oder 1"
         self.current_lane = new_lane
         if self.logging:
-            print("set lane to ID: %d" % self.current_lane)
+            print("set lane to %s (%d)" % (self.Lanes[new_lane], new_lane))
 
     def nearest_point(self, given_point):
         curr_lane = self.current_lane

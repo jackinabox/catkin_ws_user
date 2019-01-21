@@ -3,10 +3,11 @@
 import rospy
 import numpy as np
 from geometry_msgs.msg import Point
+from std_msgs.msg import String
+from std_msgs.msg import UInt8
 from nav_msgs.msg import Odometry
 from setup_values import Setup
 from model_track import Track
-
 
 setup = Setup()
 logging = setup.logging
@@ -19,17 +20,27 @@ location = np.array([])
 location_corr = np.array([])
 
 
-def callback(data):
+def callback_target(data):
     global location
     global location_corr
     x, y = data.pose.pose.position.x, data.pose.pose.position.y
-    print("position:       ", x, y)
+    if logging:
+        print("position:       ", x, y)
     p_ahead = model.look_ahead((x, y), distance)
-    print("p_ahead", p_ahead)
+    if logging:
+        print("p_ahead", p_ahead)
     to_pub = Point(p_ahead[0], p_ahead[1], 0)
     # print("ahead:          ",to_pub.x,to_pub.y)
     # print("    ------------------")
     pub_target.publish(to_pub)
+
+
+def callback_lane_set_to(data):
+    model.set_lane(data)
+
+
+def callback_lane_switch(data):
+    model.switch_lane()
 
 
 # location = np.append(location, ([x, y]))
@@ -46,7 +57,10 @@ rospy.init_node("localize", anonymous=True)
 
 # create subscribers and publishers
 pub_target = rospy.Publisher("/target_point", Point, queue_size=1)
-sub_pos = rospy.Subscriber("/localization/odom/" + str(carID), Odometry, callback, queue_size=1)
-# print("hello")
+sub_pos = rospy.Subscriber("/localization/odom/" + str(carID), Odometry, callback_target, queue_size=1)
+
+# lane stuff
+sub_lane_switch_to = rospy.Subscriber("/lane_set_to", UInt8, callback_lane_set_to, queue_size=10)
+sub_lane_switch = rospy.Subscriber("/lane_switch", String, callback_lane_switch, queue_size=10)
 
 rospy.spin()
