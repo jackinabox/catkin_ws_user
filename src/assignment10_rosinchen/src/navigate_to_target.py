@@ -32,7 +32,7 @@ desired_position = np.array([1.96, 2.155])
 
 def callback_position(data):
     global desired_position
-    x, y, w, z = data.pose.pose.position.x, data.pose.pose.position.y, data.pose.pose.orientation.w, data.pose.pose.orientation.z
+    x, y, w, z = data.pose.pose.position.x+setup.gps_offset[0], data.pose.pose.position.y+setup.gps_offset[1], data.pose.pose.orientation.w, data.pose.pose.orientation.z
     # print("x,y,w:",x,y,w)
     current_position = np.array([x, y])
 

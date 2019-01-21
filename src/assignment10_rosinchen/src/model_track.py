@@ -2,7 +2,6 @@
 
 import numpy as np
 
-
 class Track:
 
     def __init__(self, initial_lane, logging=False):

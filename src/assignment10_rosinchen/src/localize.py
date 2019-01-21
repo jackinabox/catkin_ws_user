@@ -6,7 +6,7 @@ from geometry_msgs.msg import Point
 from nav_msgs.msg import Odometry
 from setup_values import Setup
 from model_track import Track
-
+from setup_values import Setup
 
 setup = Setup()
 logging = setup.logging
@@ -22,7 +22,7 @@ location_corr = np.array([])
 def callback(data):
     global location
     global location_corr
-    x, y = data.pose.pose.position.x, data.pose.pose.position.y
+    x, y = data.pose.pose.position.x+setup.gps_offset[0], data.pose.pose.position.y+setup.gps_offset[1]
     #print("position:       ", x, y)
     p_ahead = model.look_ahead((x, y), distance)
     #print("p_ahead", p_ahead)
