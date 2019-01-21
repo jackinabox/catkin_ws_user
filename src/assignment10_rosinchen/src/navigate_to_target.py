@@ -17,11 +17,13 @@ from geometry_msgs.msg import Pose
 from geometry_msgs.msg import Point
 from geometry_msgs.msg import Quaternion
 from sensor_msgs.msg import Image
+from setup_values import Setup
 
-carID = 5
-target_speed = 300
-curve_angle = 30
-slow_curve = 0.66
+setup = Setup()
+carID = setup.carID  # 5
+target_speed = setup.target_speed  # 300
+curve_angle = setup.curve_angle  # 30
+slow_curve = setup.slowdown_curve  # 0.66
 
 print("I'm starting up!")
 
@@ -52,10 +54,10 @@ def callback_position(data):
 
     print("DesDirect: ", desired_direction)
     print("TEST: ", np.dot(orientation_vector, desired_direction) / (
-                np.linalg.norm(orientation_vector) * np.linalg.norm(desired_direction)))
+            np.linalg.norm(orientation_vector) * np.linalg.norm(desired_direction)))
 
     steering_angle_temp = np.arccos(np.dot(orientation_vector, desired_direction) / (
-                np.linalg.norm(orientation_vector) * np.linalg.norm(desired_direction)))
+            np.linalg.norm(orientation_vector) * np.linalg.norm(desired_direction)))
     # print("Steering: ",steering_angle_temp)
     # if steering_angle_temp <= np.pi:
     #	steering_angle_temp=

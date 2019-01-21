@@ -5,7 +5,7 @@ import numpy as np
 
 class Track:
 
-    def __init__(self, initial_lane, logging):
+    def __init__(self, initial_lane, logging=False):
         # Model - values in cm
         self.center_upper = [196, 215.5]
         self.center_lower = [405, 215.5]
@@ -33,3 +33,54 @@ class Track:
         self.current_lane = new_lane
         if self.logging:
             print("set lane to ID: %d" % self.current_lane)
+
+    def nearest_point(self, given_point):
+        curr_lane = self.current_lane
+        lines = self.twoLines[curr_lane]
+        radius = self.twoRadii[curr_lane]
+        centers = self.twoCenters
+        x, y = given_point
+
+        if x < centers[0, 0]:  # upper semicircle
+            vec_center_given = given_point - centers[0]
+            vec_circle = vec_center_given * radius / np.linalg.norm(vec_center_given)
+            return 0, np.array(centers[0] + vec_circle)
+
+        elif x > centers[1, 0]:  # lower semicircle
+            vec_center_given = given_point - centers[1]
+            vec_circle = vec_center_given * radius / np.linalg.norm(vec_center_given)
+            return 1, np.array(centers[1] + vec_circle)
+
+        elif y <= centers[0, 1]:  # left line
+            return 2, np.array([x, lines[0, 0, 1]])
+
+        elif y > centers[0, 1]:  # right line
+            return 3, np.array([x, lines[1, 0, 1]])
+
+        else:
+            print("ERROR in choice of track part!")
+
+    def look_ahead(self, given_point, distance, clockwise=False):
+        distance_corr = distance + 0.3
+        case, near_point = self.nearest_point(given_point)
+        centers = self.twoCenters
+        if case == 0:  # upper semicircle
+            vec_center_given = near_point - centers[0]
+            vec_circle = vec_center_given / np.linalg.norm(vec_center_given)
+            distance_rotated = np.array([-distance_corr * vec_circle[1], distance_corr * vec_circle[0]])
+            # print("distance_corr, rotated",distance_corr,distance_rotated)
+            raw_ahead = near_point + distance_rotated
+            return self.nearest_point(raw_ahead)[1]
+        elif case == 1:  # lower semicircle
+            vec_center_given = near_point - centers[1]
+            vec_circle = vec_center_given / np.linalg.norm(vec_center_given)
+            distance_rotated = np.array([-distance_corr * vec_circle[1], distance_corr * vec_circle[0]])
+            # print("distance_corr, rotated",distance_corr,distance_rotated)
+            raw_ahead = near_point + distance_rotated
+            return self.nearest_point(raw_ahead)[1]
+        elif case == 2:  # left line, driving downward, x increasing
+            raw_ahead = np.array([near_point[0] + distance_corr, near_point[1]])
+            return self.nearest_point(raw_ahead)[1]
+        elif case == 3:  # right line, driving upward, x decreasing
+            raw_ahead = np.array([near_point[0] - distance_corr, near_point[1]])
+            return self.nearest_point(raw_ahead)[1]

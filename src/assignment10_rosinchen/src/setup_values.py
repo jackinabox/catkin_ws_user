@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import rospy
 
 
 class Setup:
@@ -11,4 +10,5 @@ class Setup:
         self.curve_angle = 30
         self.slowdown_curve = 0.66
         self.laneID = 0
+        self.logging = False
         # rospy.loginfo("initial setup:\n")
