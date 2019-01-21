@@ -21,26 +21,26 @@ location_corr = np.array([])
 
 
 def callback_target(data):
-    global location
-    global location_corr
-    x, y = data.pose.pose.position.x, data.pose.pose.position.y
-    if logging:
-        print("position:       ", x, y)
-    p_ahead = model.look_ahead((x, y), distance)
-    if logging:
-        print("p_ahead", p_ahead)
-    to_pub = Point(p_ahead[0], p_ahead[1], 0)
-    # print("ahead:          ",to_pub.x,to_pub.y)
-    # print("    ------------------")
-    pub_target.publish(to_pub)
+	global location
+	global location_corr
+	x, y = data.pose.pose.position.x + setup.gps_offset[0], data.pose.pose.position.y + setup.gps_offset[1]
+	if logging:
+		print("position:       ", x, y)
+	p_ahead = model.look_ahead((x, y), distance)
+	if logging:
+		print("p_ahead", p_ahead)
+	to_pub = Point(p_ahead[0], p_ahead[1], 0)
+	# print("ahead:          ",to_pub.x,to_pub.y)
+	# print("    ------------------")
+	pub_target.publish(to_pub)
 
 
 def callback_lane_set_to(data):
-    model.set_lane(data)
+	model.set_lane(data)
 
 
 def callback_lane_switch(data):
-    model.switch_lane()
+	model.switch_lane()
 
 
 # location = np.append(location, ([x, y]))
