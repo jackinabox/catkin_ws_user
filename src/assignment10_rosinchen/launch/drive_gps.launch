@@ -8,5 +8,18 @@
 	<node name="controller_gps_steering.py" pkg="assignment10_rosinchen"
 		type="controller_gps_steering.py" output="screen">
 	</node>    
+
+	<node name="nexpointorientation.py" pkg="assignment10_rosinchen"
+		type="nexpointorientation.py" output="screen">
+	</node>    
+	
+	<node name="master_discovery" pkg="master_discovery_fkie" type="master_discovery" output="screen"/>
+	<node name="master_sync" pkg="master_sync_fkie" type="master_sync" output="screen">
+		<rosparam param="sync_hosts">['192.168.43.30']</rosparam>
+	</node>
+	<node pkg="tf" type="tf_remap" name="tf_remapper" output="screen">
+		<rosparam param="mappings">[{old: /car_0/base_link, new: /base_link}]</rosparam>
+	</node>
+
 </launch>
 

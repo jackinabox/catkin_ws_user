@@ -20,6 +20,9 @@ from sensor_msgs.msg import Image
 
 
 carID = 5
+target_speed = 300
+curve_angle = 30
+slow_curve = 0.66
 
 print("I'm starting up!")
 
@@ -74,6 +77,10 @@ def callback_position(data):
 	print(" ")
 	pub_steering.publish(steering_angle_final)
 
+	if steering_angle_final>90+curve_angle or steering_angle_final<90-curve_angle:
+		pub_speed.publish(target_speed*slow_curve)
+	else:
+		pub_speed.publish(target_speed)
 	#rospy.sleep(1)
 	
 	
@@ -89,6 +96,7 @@ sub_pos = rospy.Subscriber("/localization/odom/"+str(carID), Odometry, callback_
 sub_des = rospy.Subscriber("/target_point", Point, callback_update_destiny, queue_size=1)
 
 pub_steering = rospy.Publisher("steering", UInt8, queue_size=1)
+pub_speed = rospy.Publisher("/manual_control/speed", Int16, queue_size=1)
 #pub_speed = rospy.Publisher("/speed", UInt8, queue_size=1)
 
 

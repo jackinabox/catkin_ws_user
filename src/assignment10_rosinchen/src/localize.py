@@ -10,7 +10,7 @@ location = np.array([])
 location_corr = np.array([])
 
 laneID = 1
-distance = 0.5
+distance = 0.35
 
 
 # Model. all in cm
@@ -53,7 +53,7 @@ def nearest_point(given_point, laneID=laneID):
 	else:
 		print("ERROR in choice of track part!")
 
-def look_ahead(given_point,laneID,distance):
+def look_ahead(given_point,laneID,distance, clockwise = False):
 	distance_corr = distance + 0.3
 	case,nearPoint = nearest_point(given_point,laneID)
 	#print("nearest_point:  ",nearPoint)
