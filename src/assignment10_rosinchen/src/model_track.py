@@ -36,7 +36,7 @@ class Track:
 		assert (new_lane in [0, 1]), "choose lane 0 oder 1"
 		self.current_lane = new_lane
 		if self.logging:
-			print("set lane to %s (%d)" % (self.Lanes[new_lane], new_lane))
+			print("set to %s (%d)" % (self.Lanes[new_lane], new_lane))
 
 	def nearest_point(self, given_point):
 		curr_lane = self.current_lane
