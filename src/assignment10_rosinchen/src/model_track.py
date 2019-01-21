@@ -23,7 +23,7 @@ class Track:
 
 		self.logging = logging
 
-		self.Lanes = {0: "outer lane", 1: "inner lane"}
+		self.Lanes = {0: "inner lane", 1: "outer lane"}
 
 	def switch_lane(self):
 		curr_lane = self.current_lane
@@ -33,7 +33,7 @@ class Track:
 			print("switched to %s (%d)" % (self.Lanes[updated_lane], updated_lane))
 
 	def set_lane(self, new_lane):
-		assert (new_lane in [0, 1]), "choose lane 0 oder 1"
+		assert (new_lane in [0, 1]), "choose inner lane with [0] or outer lane with [1]"
 		self.current_lane = new_lane
 		if self.logging:
 			print("set to %s (%d)" % (self.Lanes[new_lane], new_lane))
