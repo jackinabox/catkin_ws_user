@@ -5,10 +5,12 @@ import numpy as np
 from geometry_msgs.msg import Point
 from std_msgs.msg import String
 from std_msgs.msg import UInt8
+from std_msgs.msg import Int16
 from nav_msgs.msg import Odometry
 from setup_values import Setup
 from model_track import Track
 from obstacle_detector import Obstacle_detector
+from sensor_msgs.msg import LaserScan
 
 setup = Setup()
 logging = setup.logging
@@ -16,9 +18,9 @@ carID = setup.carID  # 5
 laneID = setup.laneID_initial  # 0
 lookahead_distance = setup.lookahead_distance_initial  # 0.35
 lookahead_distance_scale = setup.lookahead_distance_factor
-threshold_obstacle_distance = setup.threshold_obstacle_distance
+#threshold_obstacle_distance = setup.threshold_obstacle_distance
 model = Track(laneID, logging)
-obstacle_detector = Obstacle_detector()
+obstacle_detector = Obstacle_detector(setup.threshold_obstacle_distance)
 
 location_current = None
 location = np.array([])
@@ -48,7 +50,7 @@ def callback_update_position(data):
 
 def callback_update_lookahead_distance(data):
 	global lookahead_distance
-	lookahead_distance = data * lookahead_distance_scale
+	lookahead_distance = float(data.data) * lookahead_distance_scale
 
 
 def callback_avoid_obstacle(data):

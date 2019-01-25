@@ -47,6 +47,7 @@ def get_mean_past(b):
 
 
 def callback_position(data):
+	print("starte callback_position")
 	global desired_position
 	x, y, w, z = data.pose.pose.position.x + setup.gps_offset[0], data.pose.pose.position.y + setup.gps_offset[
 		1], data.pose.pose.orientation.w, data.pose.pose.orientation.z
