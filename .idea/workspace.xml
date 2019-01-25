@@ -3,10 +3,11 @@
   <component name="ChangeListManager">
     <list default="true" id="740fd956-7ae5-409e-a004-b7dd1b740189" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/assignment10_rosinchen/launch/drive_gps.launch" beforeDir="false" afterPath="$PROJECT_DIR$/src/assignment10_rosinchen/launch/drive_gps.launch" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/assignment10_rosinchen/src/localize.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/assignment10_rosinchen/src/localize.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/assignment10_rosinchen/src/navigate_to_target.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/assignment10_rosinchen/src/navigate_to_target.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/assignment10_rosinchen/src/setup_values.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/assignment10_rosinchen/src/setup_values.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/assignment11_rosinchen/launch/drive_gps.launch" beforeDir="false" afterPath="$PROJECT_DIR$/src/assignment11_rosinchen/launch/drive_gps.launch" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/assignment11_rosinchen/src/localize.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/assignment11_rosinchen/src/localize.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/assignment11_rosinchen/src/model_track.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/assignment11_rosinchen/src/model_track.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/assignment11_rosinchen/src/navigate_to_target.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/assignment11_rosinchen/src/navigate_to_target.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/assignment11_rosinchen/src/setup_values.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/assignment11_rosinchen/src/setup_values.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -34,13 +35,13 @@
       <usages-collector id="statistics.file.extensions.open">
         <counts>
           <entry key="launch" value="5" />
-          <entry key="py" value="11" />
+          <entry key="py" value="18" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.open">
         <counts>
           <entry key="PLAIN_TEXT" value="4" />
-          <entry key="Python" value="11" />
+          <entry key="Python" value="18" />
           <entry key="roslaunch" value="1" />
         </counts>
       </usages-collector>
@@ -55,91 +56,38 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/assignment11_rosinchen/src/localize.py">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/assignment11_rosinchen/src/model_track.py">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/assignment10_rosinchen/src/setup_values.py">
+        <entry file="file://$PROJECT_DIR$/src/assignment11_rosinchen/src/navigate_to_target.py">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/assignment11_rosinchen/src/setup_values.py">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/assignment11_rosinchen/src/speed_function.py">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/assignment11_rosinchen/src/controller_speed.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="102">
-              <caret line="6" column="38" selection-start-line="6" selection-start-column="38" selection-end-line="6" selection-end-column="38" />
+            <state relative-caret-position="333">
+              <caret line="129" column="91" lean-forward="true" selection-start-line="129" selection-end-line="129" selection-end-column="91" />
               <folding>
-                <marker date="1548425215081" expanded="true" signature="36:37" ph="..." />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/assignment10_rosinchen/src/localize.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="401">
-              <caret line="38" column="29" lean-forward="true" selection-start-line="38" selection-start-column="29" selection-end-line="38" selection-end-column="29" />
-              <folding>
-                <element signature="e#23#35#0" expanded="true" />
-                <marker date="1548424984604" expanded="true" signature="1025:1049" ph="..." />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/assignment10_rosinchen/src/model_track.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="459">
-              <caret line="27" column="26" selection-start-line="27" selection-start-column="26" selection-end-line="27" selection-end-column="26" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/assignment10_rosinchen/src/velocity.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-918" />
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/assignment10_rosinchen/src/navigate_to_target.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="118">
-              <caret line="29" column="40" selection-start-line="29" selection-start-column="40" selection-end-line="29" selection-end-column="40" />
-              <folding>
-                <element signature="e#41#54#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/assignment10_rosinchen/launch/drive_gps.launch">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="408">
-              <caret line="24" lean-forward="true" selection-start-line="24" selection-end-line="24" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/assignment4_rosinchen/src/image_processing_example.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="136">
-              <caret line="19" column="21" selection-start-line="19" selection-start-column="6" selection-end-line="19" selection-end-column="21" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/assignment10_rosinchen/src/controller_speed.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1724" />
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/assignment10_rosinchen/src/controller_steering.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1105">
-              <caret line="80" column="19" selection-start-line="80" selection-start-column="19" selection-end-line="80" selection-end-column="19" />
-              <folding>
-                <element signature="e#41#54#0" expanded="true" />
+                <element signature="e#57#69#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -256,20 +204,13 @@
               <item name="catkin_ws_user" type="b2602c69:ProjectViewProjectNode" />
               <item name="catkin_ws_user" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="assignment10_rosinchen" type="462c0819:PsiDirectoryNode" />
+              <item name="assignment11_rosinchen" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="catkin_ws_user" type="b2602c69:ProjectViewProjectNode" />
               <item name="catkin_ws_user" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="assignment10_rosinchen" type="462c0819:PsiDirectoryNode" />
-              <item name="launch" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="catkin_ws_user" type="b2602c69:ProjectViewProjectNode" />
-              <item name="catkin_ws_user" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="assignment10_rosinchen" type="462c0819:PsiDirectoryNode" />
+              <item name="assignment11_rosinchen" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
@@ -330,7 +271,7 @@
       <window_info anchor="bottom" id="Database Changes" order="9" show_stripe_button="false" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
       <window_info anchor="bottom" id="Terminal" order="11" weight="0.32885906" />
-      <window_info anchor="bottom" id="Python Console" order="12" visible="true" weight="0.27785236" />
+      <window_info anchor="bottom" id="Python Console" order="12" visible="true" weight="0.21342282" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -415,7 +356,43 @@
     <entry file="file://$PROJECT_DIR$/src/assignment10_rosinchen/launch/drive_gps.launch">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="408">
-          <caret line="24" lean-forward="true" selection-start-line="24" selection-end-line="24" />
+          <caret line="24" selection-start-line="24" selection-end-line="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/assignment10_rosinchen/src/controller_speed.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1724" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/assignment10_rosinchen/src/navigate_to_target.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="284">
+          <caret line="49" column="27" lean-forward="true" selection-start-line="49" selection-start-column="27" selection-end-line="49" selection-end-column="27" />
+          <folding>
+            <element signature="e#41#54#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/assignment10_rosinchen/src/setup_values.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="238">
+          <caret line="14" column="43" lean-forward="true" selection-start-line="14" selection-start-column="43" selection-end-line="14" selection-end-column="43" />
+          <folding>
+            <marker date="1548425215081" expanded="true" signature="36:37" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/assignment10_rosinchen/src/localize.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="401">
+          <caret line="38" column="29" selection-start-line="38" selection-start-column="29" selection-end-line="38" selection-end-column="29" />
+          <folding>
+            <element signature="e#23#35#0" expanded="true" />
+            <marker date="1548424984604" expanded="true" signature="1025:1049" ph="..." />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -426,41 +403,35 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/assignment10_rosinchen/src/navigate_to_target.py">
+    <entry file="file://$PROJECT_DIR$/src/assignment11_rosinchen/src/localize.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/assignment11_rosinchen/src/model_track.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/assignment11_rosinchen/src/setup_values.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/assignment11_rosinchen/src/speed_function.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/assignment11_rosinchen/src/controller_steering.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="118">
-          <caret line="29" column="40" selection-start-line="29" selection-start-column="40" selection-end-line="29" selection-end-column="40" />
+        <state relative-caret-position="-959" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/assignment11_rosinchen/src/controller_speed.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="333">
+          <caret line="129" column="91" lean-forward="true" selection-start-line="129" selection-end-line="129" selection-end-column="91" />
           <folding>
-            <element signature="e#41#54#0" expanded="true" />
+            <element signature="e#57#69#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/assignment10_rosinchen/src/controller_speed.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1724" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/assignment10_rosinchen/src/localize.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="401">
-          <caret line="38" column="29" lean-forward="true" selection-start-line="38" selection-start-column="29" selection-end-line="38" selection-end-column="29" />
-          <folding>
-            <element signature="e#23#35#0" expanded="true" />
-            <marker date="1548424984604" expanded="true" signature="1025:1049" ph="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/assignment10_rosinchen/src/setup_values.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="102">
-          <caret line="6" column="38" selection-start-line="6" selection-start-column="38" selection-end-line="6" selection-end-column="38" />
-          <folding>
-            <marker date="1548425215081" expanded="true" signature="36:37" ph="..." />
-          </folding>
-        </state>
-      </provider>
+    <entry file="file://$PROJECT_DIR$/src/assignment11_rosinchen/src/navigate_to_target.py">
+      <provider selected="true" editor-type-id="text-editor" />
     </entry>
   </component>
 </project>
