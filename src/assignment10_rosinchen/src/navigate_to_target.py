@@ -27,7 +27,7 @@ curve_angle = setup.curve_angle  # 30
 slow_curve = setup.slowdown_curve  # 0.66
 is_shutdown = False
 
-print("I'm starting up!")
+print(" ##### navigate_to_target started ######")
 
 desired_position = np.array([1.96, 2.155])
 

@@ -36,7 +36,7 @@ def callback_target(data):
 
 
 def callback_lane_set_to(data):
-	model.set_lane(data)
+	model.set_lane(data.data)
 
 
 def callback_lane_switch(data):
@@ -52,7 +52,7 @@ def callback_lane_switch(data):
 # rospy.sleep(1)
 
 rospy.init_node("localize", anonymous=True)
-
+print(" ##### localize started ######")
 # publish topic /target_point
 
 # create subscribers and publishers
