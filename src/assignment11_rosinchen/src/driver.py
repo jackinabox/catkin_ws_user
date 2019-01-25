@@ -18,6 +18,7 @@ lookahead_distance = setup.lookahead_distance_initial  # 0.35
 lookahead_distance_scale = setup.lookahead_distance_factor
 threshold_obstacle_distance = setup.threshold_obstacle_distance
 model = Track(laneID, logging)
+obstacle_detector = Obstacle_detector()
 
 location_current = None
 location = np.array([])
@@ -51,7 +52,8 @@ def callback_update_lookahead_distance(data):
 
 
 def callback_avoid_obstacle(data):
-
+	if obstacle_detector.awesome(data, location_current, model):
+		model.switch_lane()
 
 def callback_lane_set_to(data):
 	model.set_lane(data.data)
