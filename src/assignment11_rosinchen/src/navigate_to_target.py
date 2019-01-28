@@ -128,7 +128,7 @@ rospy.init_node("desired_steering", anonymous=True)
 
 # create subscribers and publishers
 sub_pos = rospy.Subscriber("/localization/odom/" + str(carID), Odometry, callback_position, queue_size=1)
-sub_des = rospy.Subscriber("/target_point", Point, callback_update_destiny, queue_size=1)
+sub_des = rospy.Subscriber("/driver/target_point", Point, callback_update_destiny, queue_size=1)
 
 pub_steering = rospy.Publisher("steering", UInt8, queue_size=1)
 pub_speed = rospy.Publisher("/manual_control/speed", Int16, queue_size=1)

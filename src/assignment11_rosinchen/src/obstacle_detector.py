@@ -7,7 +7,7 @@ from sensor_msgs.msg import LaserScan
 import numpy as np
 
 
-class Obstacle_detector:  #
+class Obstacle_detector:
 
 	def __init__(self, distanceToObstacleTreshold):
 		self.distanceToObstacleTreshold = distanceToObstacleTreshold

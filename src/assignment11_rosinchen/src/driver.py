@@ -4,6 +4,7 @@ import rospy
 import numpy as np
 from geometry_msgs.msg import Point
 from std_msgs.msg import String
+from std_msgs.msg import Float32
 from std_msgs.msg import UInt8
 from std_msgs.msg import Int16
 from nav_msgs.msg import Odometry
@@ -18,7 +19,7 @@ carID = setup.carID  # 5
 laneID = setup.laneID_initial  # 0
 lookahead_distance = setup.lookahead_distance_initial  # 0.35
 lookahead_distance_scale = setup.lookahead_distance_factor
-#threshold_obstacle_distance = setup.threshold_obstacle_distance
+# threshold_obstacle_distance = setup.threshold_obstacle_distance
 model = Track(laneID, logging)
 obstacle_detector = Obstacle_detector(setup.threshold_obstacle_distance)
 
@@ -35,7 +36,7 @@ def update_target(data):
 		print("position:       ", x, y)
 	p_ahead = model.look_ahead((x, y), lookahead_distance)
 	if logging:
-		print("p_ahead", p_ahead)
+		print("p_ahead: ", p_ahead)
 	to_pub = Point(p_ahead[0], p_ahead[1], 0)
 	# print("ahead:          ",to_pub.x,to_pub.y)
 	# print("    ------------------")
@@ -51,11 +52,15 @@ def callback_update_position(data):
 def callback_update_lookahead_distance(data):
 	global lookahead_distance
 	lookahead_distance = float(data.data) * lookahead_distance_scale
+	pub_lookahead_dist.publish(Float32(lookahead_distance))
+	if logging:
+		print("speed: %f -> lookaheaddist: %f" % (data.data, lookahead_distance))
 
 
 def callback_avoid_obstacle(data):
 	if obstacle_detector.awesome(data, location_current, model):
 		model.switch_lane()
+
 
 def callback_lane_set_to(data):
 	model.set_lane(data.data)
@@ -76,10 +81,15 @@ def callback_lane_switch(data):
 rospy.init_node("driver", anonymous=True)
 print(" ##### driver started ######")
 
-# create subscribers and publishers
-pub_target = rospy.Publisher("/target_point", Point, queue_size=1)
+# location, planning
+pub_target = rospy.Publisher("/driver/target_point", Point, queue_size=1)
 sub_pos = rospy.Subscriber("/localization/odom/" + str(carID), Odometry, callback_update_position, queue_size=1)
+
+# lookahead distance
 sub_curr_speed = rospy.Subscriber("/manual_control/speed", Int16, callback_update_lookahead_distance, queue_size=1)
+pub_lookahead_dist = rospy.Publisher("/driver/info/look_ahead_distance", Float32, queue_size=1)
+
+# obstacle detection
 sub_laser = rospy.Subscriber("/scan", LaserScan, callback_avoid_obstacle, queue_size=1)
 
 # lane stuff
