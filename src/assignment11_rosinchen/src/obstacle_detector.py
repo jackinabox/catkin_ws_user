@@ -7,13 +7,13 @@ from sensor_msgs.msg import LaserScan
 import numpy as np
 
 
-class Obstacle_detector:
+class ObstacleDetector:
 
 	def __init__(self, distanceToObstacleTreshold):
 		self.distanceToObstacleTreshold = distanceToObstacleTreshold
 		self.distanceToTrackTreshold = 0.15
 
-	def awesome(self, lidar, position, model):
+	def detects_an_obstacle(self, lidar, position, model):
 		obstacles = self.rotate(lidar, position)
 		return self.process_obstacles(obstacles, model, position)
 
@@ -45,7 +45,7 @@ class Obstacle_detector:
 		nearestPoints_obs = [model.nearest_point(obs) for obs in obstacles]
 		nearestPoint_car = model.nearest_point([x, y])
 		distanceToTrack = [np.linalg.norm(nearestPoints_obs[i], obstacles[i]) for i in range(len(nearestPoints_obs))]
-		distanceToTrack[distanceToTrack > distanceToTrackTreshold] = np.nan
+		distanceToTrack[distanceToTrack > self.distanceToTrackTreshold] = np.nan
 		distanceToCar = [np.linalg.norm(nearestPoints_obs[i], nearestPoint_car) for i in range(len(nearestPoints_obs))]
 		nearestObstacle = np.minarg(distanceToCar)
-		return distanceToCar[nearestObstacle] < distanceToObstacleTreshold
+		return distanceToCar[nearestObstacle] < self.distanceToObstacleTreshold

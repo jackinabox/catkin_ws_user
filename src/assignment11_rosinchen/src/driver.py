@@ -10,7 +10,7 @@ from std_msgs.msg import Int16
 from nav_msgs.msg import Odometry
 from setup_values import Setup
 from model_track import Track
-from obstacle_detector import Obstacle_detector
+from obstacle_detector import ObstacleDetector
 from sensor_msgs.msg import LaserScan
 
 setup = Setup()
@@ -21,7 +21,7 @@ lookahead_distance = setup.lookahead_distance_initial  # 0.35
 lookahead_distance_scale = setup.lookahead_distance_factor
 # threshold_obstacle_distance = setup.threshold_obstacle_distance
 model = Track(laneID, logging)
-obstacle_detector = Obstacle_detector(setup.threshold_obstacle_distance)
+obstacle_detector = ObstacleDetector(setup.threshold_obstacle_distance)
 
 location_current = None
 location = np.array([])
@@ -58,7 +58,7 @@ def callback_update_lookahead_distance(data):
 
 
 def callback_avoid_obstacle(data):
-	if obstacle_detector.awesome(data, location_current, model):
+	if obstacle_detector.detects_an_obstacle(data, location_current, model):
 		model.switch_lane()
 
 
