@@ -9,9 +9,10 @@ import numpy as np
 
 class ObstacleDetector:
 
-	def __init__(self, distanceToObstacleTreshold):
+	def __init__(self, distanceToObstacleTreshold, logging):
 		self.distanceToObstacleTreshold = distanceToObstacleTreshold
 		self.distanceToTrackTreshold = 0.15
+		self.logging = logging
 
 	def detects_an_obstacle(self, lidar, position, model):
 		obstacles = self.rotate(lidar, position)
@@ -20,7 +21,7 @@ class ObstacleDetector:
 	def rotate(self, lidar, position):
 		# global T
 		x, y, w, z = position.pose.pose.position.x, position.pose.pose.position.y, position.pose.pose.orientation.w, position.pose.pose.orientation.z
-		current_position = np.array([x, y])
+		# current_position = np.array([x, y])
 		orientation_angle = 2 * np.arccos(w) * np.sign(z)
 		T = np.array([[np.cos(orientation_angle), -np.sin(orientation_angle), 0, x],
 					  [np.sin(orientation_angle), np.cos(orientation_angle), 0, y], [0, 0, 1, 0], [0, 0, 0, 1]])
@@ -36,7 +37,8 @@ class ObstacleDetector:
 			# print(world_vector[:2,0].shape)
 			# datenauto = np.append(datenauto,world_vector[:2,0].reshape(2,1),axis=1)
 			datenauto[inx, :] = world_vector[:2, 0].reshape(2, 1)
-		print(datenauto[:, 1])
+		if self.logging:
+			print("rotate() -> datenauto: ", datenauto[:, 1])
 		return datenauto
 
 	def process_obstacles(self, obstacles, model, position):
