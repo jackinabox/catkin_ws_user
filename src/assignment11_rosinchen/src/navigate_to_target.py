@@ -25,6 +25,7 @@ carID = setup.carID  # 5
 target_speed = setup.target_speed  # 300
 curve_angle = setup.curve_angle  # 30
 slow_curve = setup.slowdown_curve  # 0.66
+handbrake = setup.handbrake
 is_shutdown = False
 
 print(" ##### navigate_to_target started ######")
@@ -103,10 +104,17 @@ def callback_position(data):
 	# print("final steering angle",steering_angle_final," , publish "+str(np.round(steering_angle_final,2)))
 
 	if not is_shutdown:
-		if get_mean_past(past_angle_velo) > 90 + curve_angle or get_mean_past(past_angle_velo) < 90 - curve_angle:
+		if handbrake:
+			pub_speed.publish(0)
+		elif get_mean_past(past_angle_velo) > 90 + curve_angle or get_mean_past(past_angle_velo) < 90 - curve_angle:
 			pub_speed.publish(target_speed * slow_curve)
 		else:
 			pub_speed.publish(target_speed)
+
+
+def callback_handbrake(data):
+	global handbrake
+	handbrake = data.data
 
 
 def when_shutdown():
@@ -134,5 +142,6 @@ pub_steering = rospy.Publisher("steering", UInt8, queue_size=1)
 pub_speed = rospy.Publisher("/manual_control/speed", Int16, queue_size=1)
 # pub_speed = rospy.Publisher("/speed", UInt8, queue_size=1)
 
+sub_handbrake = rospy.Subscriber("/driver/handbrake/state", Bool, callback_handbrake, queue_size=1)
 
 rospy.spin()

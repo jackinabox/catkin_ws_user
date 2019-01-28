@@ -12,6 +12,7 @@ class Setup:
 		self.slowdown_curve = 0.80
 		self.threshold_obstacle_distance = 0.5
 		self.laneID_initial = 1
-		self.logging = True
+		self.logging = False
 		self.gps_offset = [-0.03, -0.015]
+		self.handbrake = True
 		# rospy.loginfo("initial setup:\n")

@@ -7,11 +7,28 @@ from std_msgs.msg import String
 from std_msgs.msg import Float32
 from std_msgs.msg import UInt8
 from std_msgs.msg import Int16
+from std_msgs.msg import Bool
 from nav_msgs.msg import Odometry
 from setup_values import Setup
 from model_track import Track
 from obstacle_detector import ObstacleDetector
 from sensor_msgs.msg import LaserScan
+
+
+class Handbrake:
+	def __init__(self, initial_state, log=False):
+		# Model - values in cm
+		self.active = initial_state
+
+	def release(self):
+		self.active = False
+
+	def tighten(self):
+		self.active = True
+
+	def toggle(self):
+		self.active = (self.active + 1) % 2
+
 
 setup = Setup()
 logging = setup.logging
@@ -19,9 +36,10 @@ carID = setup.carID  # 5
 laneID = setup.laneID_initial  # 0
 lookahead_distance = setup.lookahead_distance_initial  # 0.35
 lookahead_distance_scale = setup.lookahead_distance_factor
-# threshold_obstacle_distance = setup.threshold_obstacle_distance
 model = Track(laneID, logging)
 obstacle_detector = ObstacleDetector(setup.threshold_obstacle_distance, logging)
+handbrake_state = setup.handbrake
+handbrake = Handbrake(handbrake_state)
 
 location_current = None
 location = np.array([])
@@ -69,6 +87,16 @@ def callback_lane_set_to(data):
 def callback_lane_switch(data):
 	model.switch_lane()
 
+def callback_handbrake_tighten(data):
+	global handbrake
+	handbrake = True
+	pub_handbrake.publish(Bool(True))
+
+def callback_handbrake_release(data):
+	global handbrake
+	handbrake = False
+	pub_handbrake.publish(Bool(False))
+
 
 # location = np.append(location, ([x, y]))
 # location_corr = np.append(location_corr, (look_ahead((x, y),laneID)))
@@ -95,5 +123,11 @@ sub_laser = rospy.Subscriber("/scan", LaserScan, callback_avoid_obstacle, queue_
 # lane stuff
 sub_lane_switch_to = rospy.Subscriber("/driver/lane_set_to", UInt8, callback_lane_set_to, queue_size=10)
 sub_lane_switch = rospy.Subscriber("/driver/lane_switch", String, callback_lane_switch, queue_size=10)
+
+# speed
+pub_handbrake = rospy.Publisher("/driver/handbrake/state", Bool, queue_size=1)
+sub_handbrake_tighten = rospy.Subscriber("/driver/handbrake/tighten", String, callback_handbrake_tighten, queue_size=1)
+sub_handbrake_release = rospy.Subscriber("/driver/handbrake/release", String, callback_handbrake_release, queue_size=1)
+
 
 rospy.spin()

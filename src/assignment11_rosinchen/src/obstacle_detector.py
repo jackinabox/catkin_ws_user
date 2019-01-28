@@ -7,11 +7,15 @@ from sensor_msgs.msg import LaserScan
 import numpy as np
 
 
+# import matplotlib.pyplot as plt
+
+
 class ObstacleDetector:
 
 	def __init__(self, distanceToObstacleTreshold, logging):
 		self.distanceToObstacleTreshold = distanceToObstacleTreshold
 		self.distanceToTrackTreshold = 0.15
+		self.radius_threshold = 1.5
 		self.logging = logging
 
 	def detects_an_obstacle(self, lidar, position, model):
@@ -19,6 +23,7 @@ class ObstacleDetector:
 		return self.process_obstacles(obstacles, model, position)
 
 	def rotate(self, lidar, position):
+		print("_____rotate() ....")
 		# global T
 		x, y, w, z = position.pose.pose.position.x, position.pose.pose.position.y, position.pose.pose.orientation.w, position.pose.pose.orientation.z
 		# current_position = np.array([x, y])
@@ -30,24 +35,60 @@ class ObstacleDetector:
 		daten = lidar.ranges
 		datenauto = np.zeros((360, 2))
 		for inx, i in enumerate(daten):
-			xauto = i * np.cos(inx)
-			yauto = i * np.sin(inx)
+			if i > self.radius_threshold:
+				continue
+			inxr = inx * 180 / np.pi
+			xauto = i * np.cos(inxr)
+			yauto = i * np.sin(inxr)
 			auto_vector = np.array([xauto, yauto, 0, 1]).reshape(4, 1)
+			if self.logging:
+				print("rotate() -> auto_vector.shape: ", auto_vector.shape)
 			world_vector = np.dot(T, auto_vector)
-			# print(world_vector[:2,0].shape)
-			# datenauto = np.append(datenauto,world_vector[:2,0].reshape(2,1),axis=1)
-			datenauto[inx, :] = world_vector[:2, 0].reshape(2, 1)
-		if self.logging:
-			print("rotate() -> datenauto: ", datenauto[:, 1])
+			if self.logging:
+				print("rotate() -> world_vector.shape: ", world_vector.shape)
+			datenauto[inx, :] = world_vector[:2, 0].reshape(1, 2)
+			if self.logging:
+				print("rotate() -> world_vector[:2, 0].reshape(1, 2): ", world_vector[:2, 0].reshape(1, 2))
+			if self.logging:
+				print("rotate() -> datenauto: ", datenauto.shape)
+		# plt.scatter(world_vector[0],world_vector[1])
+		# plt.show()
+		print("....rotate()_______")
+		datenauto[np.isinf(datenauto)] = 42
+		datenauto[np.isnan(datenauto)] = 43
+
+		# print("datenauto: ",datenauto)
 		return datenauto
 
 	def process_obstacles(self, obstacles, model, position):
+		print('_____process_obstacles() .....')
 		x, y = position.pose.pose.position.x, position.pose.pose.position.y
 		# car_lane = model.current_lane
-		nearestPoints_obs = [model.nearest_point(obs) for obs in obstacles]
-		nearestPoint_car = model.nearest_point([x, y])
-		distanceToTrack = [np.linalg.norm(nearestPoints_obs[i], obstacles[i]) for i in range(len(nearestPoints_obs))]
-		distanceToTrack[distanceToTrack > self.distanceToTrackTreshold] = np.nan
-		distanceToCar = [np.linalg.norm(nearestPoints_obs[i], nearestPoint_car) for i in range(len(nearestPoints_obs))]
-		nearestObstacle = np.minarg(distanceToCar)
+		nearestPoints_obs = [model.nearest_point(obs)[1] for obs in obstacles]
+		nearestPoint_car = model.nearest_point([x, y])[1]
+		# print("nearestPoints_obs: ", nearestPoints_obs)
+		distanceToTrack = np.array(
+			[np.linalg.norm(nearestPoints_obs[i] - obstacles[i]) for i in range(len(nearestPoints_obs))])
+		distanceToTrack[distanceToTrack > self.distanceToTrackTreshold] = 42
+		distanceToCar = np.array(
+			[np.linalg.norm(nearestPoints_obs[i] - nearestPoint_car) for i in range(len(nearestPoints_obs))])
+		distanceToCar[distanceToCar < 0.1] = 44.0
+		nearestObstacle = np.argmin(distanceToCar)
+
+		if self.logging:
+			print("nearestPoints_obs: ", nearestPoints_obs)
+			print("nearestPoint_car: ", nearestPoint_car)
+			print("distanceToTrack: ", distanceToTrack)
+			print("distanceToCar: ", distanceToCar)
+			print("nearestObstacle: ", nearestObstacle)
+			print("distanceToCar[nearestObstacle] < self.distanceToObstacleTreshold: ",
+				  distanceToCar[nearestObstacle] < self.distanceToObstacleTreshold)
+		print('.... process_obstacles()_______')
+
+		print("distanceToCar: ", distanceToCar)
+		print("nearestObstacle: ", nearestObstacle)
+		print("distanceToCar[nearestObstacle]: ", distanceToCar[nearestObstacle])
+		print("distanceToCar[nearestObstacle] < self.distanceToObstacleTreshold: ",
+			  distanceToCar[nearestObstacle] < self.distanceToObstacleTreshold)
+
 		return distanceToCar[nearestObstacle] < self.distanceToObstacleTreshold
