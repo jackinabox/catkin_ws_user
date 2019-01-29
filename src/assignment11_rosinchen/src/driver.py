@@ -16,8 +16,7 @@ from sensor_msgs.msg import LaserScan
 
 
 class Handbrake:
-	def __init__(self, initial_state, log=False):
-		# Model - values in cm
+	def __init__(self, initial_state):
 		self.active = initial_state
 
 	def release(self):
@@ -36,10 +35,9 @@ carID = setup.carID  # 5
 laneID = setup.laneID_initial  # 0
 lookahead_distance = setup.lookahead_distance_initial  # 0.35
 lookahead_distance_scale = setup.lookahead_distance_factor
-model = Track(laneID, logging)
-obstacle_detector = ObstacleDetector(setup.threshold_obstacle_distance, logging)
-handbrake_state = setup.handbrake
-handbrake = Handbrake(handbrake_state)
+model = Track(laneID, setup.threshold_time_lane_switch, logging)
+obstacle_detector = ObstacleDetector(setup.threshold_obstacle_distance, setup.threshold_detection_radius, logging)
+handbrake = Handbrake(setup.handbrake)
 
 location_current = None
 location = np.array([])
@@ -56,8 +54,6 @@ def update_target(data):
 	if logging:
 		print("p_ahead: ", p_ahead)
 	to_pub = Point(p_ahead[0], p_ahead[1], 0)
-	# print("ahead:          ",to_pub.x,to_pub.y)
-	# print("    ------------------")
 	pub_target.publish(to_pub)
 
 
@@ -87,15 +83,20 @@ def callback_lane_set_to(data):
 def callback_lane_switch(data):
 	model.switch_lane()
 
+
 def callback_handbrake_tighten(data):
-	global handbrake
-	handbrake = True
+	handbrake.tighten()
 	pub_handbrake.publish(Bool(True))
 
+
 def callback_handbrake_release(data):
-	global handbrake
-	handbrake = False
+	handbrake.release()
 	pub_handbrake.publish(Bool(False))
+
+
+def callback_handbrake_toggle(data):
+	handbrake.toggle()
+	pub_handbrake.publish(Bool(handbrake.active))
 
 
 # location = np.append(location, ([x, y]))
@@ -128,6 +129,6 @@ sub_lane_switch = rospy.Subscriber("/driver/lane_switch", String, callback_lane_
 pub_handbrake = rospy.Publisher("/driver/handbrake/state", Bool, queue_size=1)
 sub_handbrake_tighten = rospy.Subscriber("/driver/handbrake/tighten", String, callback_handbrake_tighten, queue_size=1)
 sub_handbrake_release = rospy.Subscriber("/driver/handbrake/release", String, callback_handbrake_release, queue_size=1)
-
+sub_handbrake_toggle = rospy.Subscriber("/driver/handbrake/toggle", String, callback_handbrake_toggle, queue_size=1)
 
 rospy.spin()

@@ -48,7 +48,7 @@ def get_mean_past(b):
 
 
 def callback_position(data):
-	print("starte callback_position")
+	#print("starte callback_position")
 	global desired_position
 	x, y, w, z = data.pose.pose.position.x + setup.gps_offset[0], data.pose.pose.position.y + setup.gps_offset[
 		1], data.pose.pose.orientation.w, data.pose.pose.orientation.z
@@ -80,7 +80,7 @@ def callback_position(data):
 	# print("Steering: ",steering_angle_temp)
 	# if steering_angle_temp <= np.pi:
 	#	steering_angle_temp=
-	steering_angle = (steering_angle_temp) / (np.pi) * 180
+	steering_angle = steering_angle_temp / np.pi * 180
 
 	orientation_vector = np.array([orientation_vector[0], orientation_vector[1], 0])
 	desired_direction = np.array([desired_direction[0], desired_direction[1], 0])
@@ -104,6 +104,7 @@ def callback_position(data):
 	# print("final steering angle",steering_angle_final," , publish "+str(np.round(steering_angle_final,2)))
 
 	if not is_shutdown:
+		global handbrake
 		if handbrake:
 			pub_speed.publish(0)
 		elif get_mean_past(past_angle_velo) > 90 + curve_angle or get_mean_past(past_angle_velo) < 90 - curve_angle:
@@ -140,7 +141,6 @@ sub_des = rospy.Subscriber("/driver/target_point", Point, callback_update_destin
 
 pub_steering = rospy.Publisher("steering", UInt8, queue_size=1)
 pub_speed = rospy.Publisher("/manual_control/speed", Int16, queue_size=1)
-# pub_speed = rospy.Publisher("/speed", UInt8, queue_size=1)
 
 sub_handbrake = rospy.Subscriber("/driver/handbrake/state", Bool, callback_handbrake, queue_size=1)
 

@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 
 import numpy as np
+import time
 
 
 class Track:
 
-	def __init__(self, initial_lane, logging=False):
+	def __init__(self, initial_lane, threshold_time_lane_switch, logging=False):
+		self.logging = logging
+
 		# Model - values in cm
 		self.center_upper = [196, 215.5]
 		self.center_lower = [405, 215.5]
@@ -14,23 +17,32 @@ class Track:
 		# lines = [left line, right line] with left line = [upper point, lower point]
 		self.radius_inner = 136.5
 		self.radius_outer = 168.5
-
+		# combined model
 		self.twoLines = np.array((self.lines_inner, self.lines_outer)) / 100.  # convert to meter
 		self.twoRadii = np.array((self.radius_inner, self.radius_outer)) / 100.
 		self.twoCenters = np.array((self.center_upper, self.center_lower)) / 100.
 
-		self.current_lane = initial_lane
-
-		self.logging = logging
-
+		# lanes & lane switching
 		self.Lanes = {0: "inner lane", 1: "outer lane"}
+		self.current_lane = initial_lane
+		self.threshold_time_lane_switch = threshold_time_lane_switch
+		self.first_time_lane_switch = True
+		self.time_at_last_switch = 0
 
 	def switch_lane(self):
-		curr_lane = self.current_lane
-		updated_lane = (curr_lane + 1) % 2
-		self.current_lane = updated_lane
-		if self.logging:
-			print("switched to %s (%d)" % (self.Lanes[updated_lane], updated_lane))
+		if self.first_time_lane_switch:
+			self.first_time_lane_switch = False
+			self.time_at_last_switch = time.time()
+
+		time_now = time.time()
+		print("Time: ", time_now - self.time_at_last_switch)
+		if np.abs(time_now - self.time_at_last_switch) > self.threshold_time_lane_switch:
+			curr_lane = self.current_lane
+			updated_lane = (curr_lane + 1) % 2
+			self.current_lane = updated_lane
+			if self.logging:
+				print("switched to %s (%d)" % (self.Lanes[updated_lane], updated_lane))
+			self.first_time_lane_switch = True
 
 	def set_lane(self, new_lane):
 		assert (new_lane in [0, 1]), "choose inner lane with [0] or outer lane with [1]"
