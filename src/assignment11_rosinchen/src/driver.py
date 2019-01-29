@@ -36,7 +36,7 @@ laneID = setup.laneID_initial  # 0
 lookahead_distance = setup.lookahead_distance_initial  # 0.35
 lookahead_distance_scale = setup.lookahead_distance_factor
 model = Track(laneID, setup.threshold_time_lane_switch, logging)
-obstacle_detector = ObstacleDetector(setup.threshold_obstacle_distance, setup.threshold_detection_radius, logging)
+obstacle_detector = ObstacleDetector(setup.threshold_distance_car_to_obstacle, setup.threshold_detection_radius, logging)
 handbrake = Handbrake(setup.handbrake)
 
 location_current = None

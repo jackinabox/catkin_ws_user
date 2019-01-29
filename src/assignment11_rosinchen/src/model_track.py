@@ -30,19 +30,32 @@ class Track:
 		self.time_at_last_switch = 0
 
 	def switch_lane(self):
+		time_now = time.time()
+		print("Time: ", time_now - self.time_at_last_switch)
+		if (time_now - self.time_at_last_switch) > self.threshold_time_lane_switch:
+			curr_lane = self.current_lane
+			updated_lane = (curr_lane + 1) % 2
+			self.current_lane = updated_lane
+			#if self.logging:
+			print("switched to %s (%d)" % (self.Lanes[updated_lane], updated_lane))
+			self.time_at_last_switch = time.time()
+
+	'''
+	def switch_lane(self):
 		if self.first_time_lane_switch:
 			self.first_time_lane_switch = False
 			self.time_at_last_switch = time.time()
 
 		time_now = time.time()
 		print("Time: ", time_now - self.time_at_last_switch)
-		if np.abs(time_now - self.time_at_last_switch) > self.threshold_time_lane_switch:
+		if (time_now - self.time_at_last_switch) > self.threshold_time_lane_switch:
 			curr_lane = self.current_lane
 			updated_lane = (curr_lane + 1) % 2
 			self.current_lane = updated_lane
 			if self.logging:
 				print("switched to %s (%d)" % (self.Lanes[updated_lane], updated_lane))
 			self.first_time_lane_switch = True
+	'''
 
 	def set_lane(self, new_lane):
 		assert (new_lane in [0, 1]), "choose inner lane with [0] or outer lane with [1]"

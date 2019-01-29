@@ -12,10 +12,10 @@ import numpy as np
 
 class ObstacleDetector:
 
-	def __init__(self, threshold_distance_to_obstacle, threshold_detection_radius, logging):
-		self.distanceToObstacleTreshold = threshold_distance_to_obstacle
-		self.distanceToTrackTreshold = 0.15
-		self.radius_threshold = threshold_detection_radius
+	def __init__(self, threshold_distance_car_to_obstacle, threshold_detection_radius, logging):
+		self.threshold_distance_car_to_obstacle = threshold_distance_car_to_obstacle
+		self.threshold_distance_obstacle_to_track = 0.15
+		self.threshold_detection_radius = threshold_detection_radius
 		self.logging = logging
 
 	def detects_an_obstacle(self, lidar, position, model):
@@ -36,7 +36,7 @@ class ObstacleDetector:
 		for inx, i in enumerate(daten):
 			if (inx > 35) or (inx > 335):
 				continue
-			if i > self.radius_threshold:
+			if i > self.threshold_detection_radius:
 				continue
 			inxr = inx * np.pi / 180
 			xauto = i * np.cos(inxr)
@@ -72,10 +72,10 @@ class ObstacleDetector:
 		# print("nearestPoints_obs: ", nearestPoints_obs)
 		distanceToTrack = np.array(
 			[np.linalg.norm(nearestPoints_obs[i] - obstacles[i]) for i in range(len(nearestPoints_obs))])
-		distanceToTrack[distanceToTrack > self.distanceToTrackTreshold] = 42
+		distanceToTrack[distanceToTrack > self.threshold_distance_obstacle_to_track] = 42
 		distanceToCar = np.array(
 			[np.linalg.norm(nearestPoints_obs[i] - nearestPoint_car) for i in range(len(nearestPoints_obs))])
-		distanceToCar[distanceToCar < 0.2] = 44.0
+		distanceToCar[distanceToCar < 0.3] = 44.0
 		nearestObstacle = np.argmin(distanceToCar)
 		'''
 		if self.logging:
@@ -95,8 +95,8 @@ class ObstacleDetector:
 		print("distanceToCar[nearestObstacle]: ", distanceToCar[nearestObstacle])
 		#print("distanceToCar[nearestObstacle] < self.distanceToObstacleTreshold: ",
 		#	  distanceToCar[nearestObstacle] < self.distanceToObstacleTreshold)
-		if distanceToCar[nearestObstacle] < self.distanceToObstacleTreshold:
-			print("OBSTACLE")
+		if distanceToCar[nearestObstacle] < self.threshold_distance_car_to_obstacle:
+			print("# OBSTACLE in %fm #" % distanceToCar[nearestObstacle])
 			return True  # distanceToCar[nearestObstacle] < self.distanceToObstacleTreshold
 		else:
 			return False
