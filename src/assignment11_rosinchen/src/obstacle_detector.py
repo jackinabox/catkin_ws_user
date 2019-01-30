@@ -87,6 +87,17 @@ class ObstacleDetector:
 			print("distanceToCar[nearestObstacle] < self.distanceToObstacleTreshold: ",
 				  distanceToCar[nearestObstacle] < self.distanceToObstacleTreshold)
 		'''
+		
+
+		#---new start
+		minimum_number_of_obs_points=4
+		nearestObstacleS = np.argpartition(distanceToCar, minimum_number_of_obs_points)[0:minimum_number_of_obs_points]
+		isObstacle = distanceToCar[nearestObstacleS] < self.threshold_distance_car_to_obstacle
+		#print("isObstacle:",np.sum(isObstacle))
+		return np.sum(isObstacle)==minimum_number_of_obs_points
+		#new end -------------
+
+
 
 		# print('.... process_obstacles()_______')
 

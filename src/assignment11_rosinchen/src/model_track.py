@@ -31,7 +31,7 @@ class Track:
 
 	def switch_lane(self):
 		time_now = time.time()
-		print("Time: ", time_now - self.time_at_last_switch)
+		#print("Time: ", time_now - self.time_at_last_switch)
 		if (time_now - self.time_at_last_switch) > self.threshold_time_lane_switch:
 			curr_lane = self.current_lane
 			updated_lane = (curr_lane + 1) % 2

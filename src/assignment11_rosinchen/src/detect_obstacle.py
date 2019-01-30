@@ -46,4 +46,13 @@ class Obstacle_detector:  #
 		distanceToTrack[distanceToTrack > distanceToTrackTreshold] = np.nan
 		distanceToCar = [np.linalg.norm(nearestPoints_obs[i], nearestPoint_car) for i in range(len(nearestPoints_obs))]
 		nearestObstacle = np.minarg(distanceToCar)
+
+		#---new start
+		nearestObstacleS = np.argpartition(distanceToCar, minimum_number_of_obs_points)
+		isObstacle = distanceToCar[nearestObstacleS] < distanceToObstacleTreshold
+		print("isObstacle:",isObstacle)
+		minimum_number_of_obs_points=5
+		return np.sum(isObstacle)==minimum_number_of_obs_points
+		#new end -------------
+
 		return distanceToCar[nearestObstacle] < distanceToObstacleTreshold
