@@ -12,7 +12,7 @@ class Setup:
 		self.threshold_distance_car_to_obstacle = 1.0
 		self.threshold_detection_radius = 1.5  # in meter
 		self.threshold_time_lane_switch = 2  # in sec
-		self.laneID_initial = 0
+		self.laneID_initial = 1
 		self.logging = False
 		self.gps_offset = [-0.03, -0.015]
 		self.handbrake = False
