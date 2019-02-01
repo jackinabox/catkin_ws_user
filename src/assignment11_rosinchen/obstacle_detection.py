@@ -11,6 +11,12 @@ import matplotlib.pyplot as plt
 carID=5
 T = 0
 
+x,y=2.05,0.75
+current_position = np.array([x, y])
+orientation_angle = 2 * np.arccos(w) * np.sign(z)
+T = np.array([[np.cos(orientation_angle),-np.sin(orientation_angle),0,x],[np.sin(orientation_angle),np.cos(orientation_angle),0,y],[0,0,1,0],[0,0,0,1]])
+
+
 # Model - values in cm
 center_upper = [196, 215.5]
 center_lower = [405, 215.5]
@@ -34,21 +40,20 @@ def callback_position(data):
 	current_position = np.array([x, y])
 	orientation_angle = 2 * np.arccos(w) * np.sign(z)
 	T = np.array([[np.cos(orientation_angle),-np.sin(orientation_angle),0,x],[np.sin(orientation_angle),np.cos(orientation_angle),0,y],[0,0,1,0],[0,0,0,1]])
-
-
+	
 def callback_scan(data):
 	global T
 	global current_position
 	global x,y
 	daten = data.ranges
 	#print(daten)
-	datenauto = np.zeros((360, 2))
+	datenauto = np.zeros((360, 2)) + np.nan
 	
 	
 	for inx,i in enumerate(daten):
-		if (inx>60)or(inx>300):
+		if inx>60 and inx<300:
 			continue
-		elif i > 1.5:
+		elif i > 0.7:
 			continue
 		inxr = inx*np.pi/180
 		xauto = i*np.cos(inxr)
@@ -68,17 +73,21 @@ def callback_scan(data):
 	print("NearCar:",nearestPoint_car)
 	#print("nearestPoints_obs: ", nearestPoints_obs)
 	distanceToTrack = np.array([np.linalg.norm(nearestPoints_obs[i]-datenauto[i]) for i in range(len(nearestPoints_obs))])
-	distanceToTrack[distanceToTrack > 0.5] = 42
+	distanceToTrack[distanceToTrack > 0.5] = np.nan
+	nearestPoints_obs[distanceToTrack > 0.5] = np.nan
+
 	distanceToCar = np.array([np.linalg.norm(nearestPoints_obs[i]- nearestPoint_car) for i in range(len(nearestPoints_obs))])
-	distanceToCar[distanceToCar<0.2] = 44.0
-	nearestObstacle = np.argmin(distanceToCar)
+	distanceToCar[distanceToCar<0.2] = np.nan
+	nearestPoints_obs[distanceToCar<0.2] = np.nan
+	nearestObstacle = np.nanargmin(distanceToCar)
 	
-	datenauto[np.isinf(datenauto)] = 42
-	datenauto[np.isnan(datenauto)] = 43
+	datenauto[np.isinf(datenauto)] = np.nan
+	#datenauto[np.isnan(datenauto)] = 43
 	
 	print(distanceToCar[nearestObstacle])
 	plt.scatter(nearestPoint_car[0],nearestPoint_car[1],marker="H",color="k")
 	plt.scatter(datenauto[:,0],datenauto[:,1],color="r")
+	plt.scatter(nearestPoints_obs[:,0],nearestPoints_obs[:,1],color="g")
 	plt.plot(current_position[0],current_position[1],marker="H")
 	plt.show(block=True)
 
