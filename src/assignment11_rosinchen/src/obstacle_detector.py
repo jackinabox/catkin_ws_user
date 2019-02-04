@@ -14,7 +14,7 @@ class ObstacleDetector:
 
 	def __init__(self, threshold_distance_car_to_obstacle, threshold_detection_radius, lidar_barcode_distance, logging):
 		self.threshold_distance_car_to_obstacle = threshold_distance_car_to_obstacle
-		self.threshold_distance_obstacle_to_track = 0.1
+		self.threshold_distance_obstacle_to_track = 0.15
 		self.threshold_detection_radius = threshold_detection_radius
 		self.lidar_correction = lidar_barcode_distance
 		self.logging = logging
@@ -71,30 +71,46 @@ class ObstacleDetector:
 		# print('_____process_obstacles() .....')
 		x, y = position.pose.pose.position.x, position.pose.pose.position.y
 		# car_lane = model.current_lane
+		# print("detector: current lane: ", model.current_lane)
 		nearestPoints_obs = np.array([model.nearest_point(obs)[1] for obs in obstacles])
 		nearestPoint_car = model.nearest_point([x, y])[1]
 		# print("nearestPoints_obs: ", nearestPoints_obs)
-		distanceToTrack = np.array(
+		distance_obs_to_track = np.array(
 			[np.linalg.norm(nearestPoints_obs[i] - obstacles[i]) for i in range(len(nearestPoints_obs))])
-		distanceToCar = np.array(
+		distance_obstacle_to_car = np.array(
 			[np.linalg.norm(nearestPoints_obs[i] - nearestPoint_car) for i in range(len(nearestPoints_obs))])
 		
 		#distanceToCar[distanceToCar       > self.threshold_distance_car_to_obstacle] = np.nan
 		#nearestPoints_obs[distanceToCar   > self.threshold_distance_car_to_obstacle] = np.nan
-		distanceToTrack[distanceToTrack   > self.threshold_distance_obstacle_to_track] = np.nan
-		nearestPoints_obs[distanceToTrack > self.threshold_distance_obstacle_to_track] = np.nan
-
+		filter = distance_obs_to_track > self.threshold_distance_obstacle_to_track
+		#distance_obs_to_track[filter] = np.nan
+		#nearestPoints_obs[filter] = np.nan
+		distance_obstacle_to_car[filter] = np.nan
 
 		#distanceToCar[distanceToCar < 0.3] = 44.0
+
+		'''
+		print(np.sum(np.isnan(distance_obstacle_to_car)))
+		nearestObstacle = np.nanargmin(distance_obstacle_to_car)
+		print(nearestObstacle)
+		'''
 		try:
-			nearestObstacle = np.nanargmin(distanceToCar)
-		except ValueError:
+			nearestObstacle = np.nanargmin(distance_obstacle_to_car)
+			print("nearest Obs: ", distance_obstacle_to_car[nearestObstacle])
+		except:
+			print("Yeah! Bahn frei, Kartoffelbrei! Hex Hex! ------------except")
+			nearestObstacle = None
 			return False
+		else:
+			print("Yeah! Bahn frei, Kartoffelbrei! Hex Hex! ----- else")
+
+
+
 		'''
 		if self.logging:
 			print("nearestPoints_obs: ", nearestPoints_obs)
 			print("nearestPoint_car: ", nearestPoint_car)
-			print("distanceToTrack: ", distanceToTrack)
+			print("distance_obs_to_track: ", distance_obs_to_track)
 			print("distanceToCar: ", distanceToCar)
 			print("nearestObstacle: ", nearestObstacle)
 			print("distanceToCar[nearestObstacle] < self.distanceToObstacleTreshold: ",
@@ -128,11 +144,12 @@ class ObstacleDetector:
 
 		# print("distanceToCar: ", distanceToCar)
 		# print("nearestObstacle: ", nearestObstacle)
-		print("distanceToCar[nearestObstacle]: ", distanceToCar[nearestObstacle])
+		print("distanceToCar[nearestObstacle]: ", distance_obstacle_to_car[nearestObstacle])
 		#print("distanceToCar[nearestObstacle] < self.distanceToObstacleTreshold: ",
 		#	  distanceToCar[nearestObstacle] < self.distanceToObstacleTreshold)
-		if distanceToCar[nearestObstacle] < self.threshold_distance_car_to_obstacle:
-			print("# OBSTACLE in %fm #" % distanceToCar[nearestObstacle])
+		if distance_obstacle_to_car[nearestObstacle] < self.threshold_distance_car_to_obstacle:
+			print("\ndistance to track: ", distance_obs_to_track[nearestObstacle])
+			print("# OBSTACLE in %fm #" % distance_obstacle_to_car[nearestObstacle])
 			return True  # distanceToCar[nearestObstacle] < self.distanceToObstacleTreshold
 		else:
 			return False

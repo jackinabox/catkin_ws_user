@@ -65,9 +65,10 @@ class Track:
 
 	def nearest_point(self, given_point):
 		if np.isnan(given_point[0]):
-			return np.nan, np.array([0,0]) + np.nan
+			return np.nan, np.array([0, 0]) + np.nan
 
 		curr_lane = self.current_lane
+		# print("nearest point: current lane: %i" % curr_lane)
 		lines = self.twoLines[curr_lane]
 		radius = self.twoRadii[curr_lane]
 		centers = self.twoCenters

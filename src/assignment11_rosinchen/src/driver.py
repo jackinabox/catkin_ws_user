@@ -33,6 +33,7 @@ setup = Setup()
 logging = setup.logging
 carID = setup.carID  # 5
 laneID = setup.laneID_initial  # 0
+
 lookahead_distance = setup.lookahead_distance_initial  # 0.35
 lookahead_distance_scale = setup.lookahead_distance_factor
 model = Track(laneID, setup.threshold_time_lane_switch, logging)
@@ -75,6 +76,7 @@ def callback_update_lookahead_distance(data):
 def callback_avoid_obstacle(data):
 	if obstacle_detector.detects_an_obstacle(data, location_current, model):
 		model.switch_lane()
+		pub_curr_lane.publish(UInt8(model.current_lane))
 
 
 def callback_lane_set_to(data):
@@ -83,6 +85,7 @@ def callback_lane_set_to(data):
 
 def callback_lane_switch(data):
 	model.switch_lane()
+	pub_curr_lane.publish(UInt8(model.current_lane))
 
 
 def callback_handbrake_tighten(data):
@@ -125,6 +128,9 @@ sub_laser = rospy.Subscriber("/scan", LaserScan, callback_avoid_obstacle, queue_
 # lane stuff
 sub_lane_switch_to = rospy.Subscriber("/driver/lane_set_to", UInt8, callback_lane_set_to, queue_size=10)
 sub_lane_switch = rospy.Subscriber("/driver/lane_switch", String, callback_lane_switch, queue_size=10)
+pub_curr_lane = rospy.Publisher("/driver/current_lane", UInt8, queue_size=10)
+
+pub_curr_lane.publish(model.current_lane)
 
 # speed
 pub_handbrake = rospy.Publisher("/driver/handbrake/state", Bool, queue_size=1)
