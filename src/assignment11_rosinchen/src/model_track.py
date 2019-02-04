@@ -60,10 +60,13 @@ class Track:
 	def set_lane(self, new_lane):
 		assert (new_lane in [0, 1]), "choose inner lane with [0] or outer lane with [1]"
 		self.current_lane = new_lane
-		if self.logging:
-			print("set to %s (%d)" % (self.Lanes[new_lane], new_lane))
+		#if self.logging:
+		print("set to %s (%d)" % (self.Lanes[new_lane], new_lane))
 
 	def nearest_point(self, given_point):
+		if np.isnan(given_point[0]):
+			return np.nan, np.array([0,0]) + np.nan
+
 		curr_lane = self.current_lane
 		lines = self.twoLines[curr_lane]
 		radius = self.twoRadii[curr_lane]

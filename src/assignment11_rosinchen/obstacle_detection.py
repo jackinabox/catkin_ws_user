@@ -8,13 +8,13 @@ from sensor_msgs.msg import LaserScan
 
 import matplotlib.pyplot as plt
 
-carID=5
+carID=7
 T = 0
 
-x,y=2.05,0.75
-current_position = np.array([x, y])
-orientation_angle = 2 * np.arccos(w) * np.sign(z)
-T = np.array([[np.cos(orientation_angle),-np.sin(orientation_angle),0,x],[np.sin(orientation_angle),np.cos(orientation_angle),0,y],[0,0,1,0],[0,0,0,1]])
+#x,y=2.05,0.75
+#current_position = np.array([x, y])
+#orientation_angle = 0
+#T = np.array([[np.cos(orientation_angle),-np.sin(orientation_angle),0,x],[np.sin(orientation_angle),np.cos(orientation_angle),0,y],[0,0,1,0],[0,0,0,1]])
 
 
 # Model - values in cm
@@ -32,11 +32,16 @@ current_lane = 0
 logging = False
 Lanes = {0: "inner lane", 1: "outer lane"}
 
+plt.figure()
+
 def callback_position(data):
 	global T
 	global current_position
 	global x,y
+	
 	x, y, w, z = data.pose.pose.position.x , data.pose.pose.position.y , data.pose.pose.orientation.w, data.pose.pose.orientation.z
+
+	#print("current pos",x,y)
 	current_position = np.array([x, y])
 	orientation_angle = 2 * np.arccos(w) * np.sign(z)
 	T = np.array([[np.cos(orientation_angle),-np.sin(orientation_angle),0,x],[np.sin(orientation_angle),np.cos(orientation_angle),0,y],[0,0,1,0],[0,0,0,1]])
@@ -46,52 +51,62 @@ def callback_scan(data):
 	global current_position
 	global x,y
 	daten = data.ranges
+	inc = data.angle_increment # 0.0174532923847
+	#print(inc)
 	#print(daten)
 	datenauto = np.zeros((360, 2)) + np.nan
 	
-	
+	#print(len(daten))
 	for inx,i in enumerate(daten):
+		
 		if inx>60 and inx<300:
+			#print('1')
 			continue
 		elif i > 0.7:
+			#print('2')
 			continue
-		inxr = inx*np.pi/180
+		#print('0')
+		inxr = inx*np.pi/180#-np.pi + (inc*inx) #*np.pi/180
 		xauto = i*np.cos(inxr)
 		yauto = i*np.sin(inxr)
 		auto_vector = np.array([xauto,yauto,0,1]).reshape(4,1)
 		world_vector = np.dot(T,auto_vector)
 		#print(world_vector[:2,0].shape)
 		datenauto[inx, :] = world_vector[:2, 0].reshape(1, 2)
+		
 	
 		
-	print(datenauto[1,:])
+	#print(datenauto[:,:])
 
 	# car_lane = model.current_lane
-	nearestPoints_obs = [nearest_point(obs)[1] for obs in datenauto]
-	print("NearObs:",nearestPoints_obs[0])
+	nearestPoints_obs = np.array([nearest_point(obs)[1] for obs in datenauto])
+	#print("NearObs:",nearestPoints_obs[0])
 	nearestPoint_car = nearest_point([x, y])[1]
-	print("NearCar:",nearestPoint_car)
+	#print("NearCar:",nearestPoint_car)
 	#print("nearestPoints_obs: ", nearestPoints_obs)
 	distanceToTrack = np.array([np.linalg.norm(nearestPoints_obs[i]-datenauto[i]) for i in range(len(nearestPoints_obs))])
-	distanceToTrack[distanceToTrack > 0.5] = np.nan
-	nearestPoints_obs[distanceToTrack > 0.5] = np.nan
+	#print(len(distanceToTrack),len(nearestPoints_obs))	
+	#distanceToTrack[distanceToTrack > 0.5] = np.nan
+	#nearestPoints_obs[distanceToTrack > 0.5] = np.nan
 
 	distanceToCar = np.array([np.linalg.norm(nearestPoints_obs[i]- nearestPoint_car) for i in range(len(nearestPoints_obs))])
 	distanceToCar[distanceToCar<0.2] = np.nan
 	nearestPoints_obs[distanceToCar<0.2] = np.nan
 	nearestObstacle = np.nanargmin(distanceToCar)
-	
+	print(distanceToCar[nearestObstacle])
 	datenauto[np.isinf(datenauto)] = np.nan
 	#datenauto[np.isnan(datenauto)] = 43
-	
-	print(distanceToCar[nearestObstacle])
+	plt.cla()
+	#print(distanceToCar[nearestObstacle])
 	plt.scatter(nearestPoint_car[0],nearestPoint_car[1],marker="H",color="k")
 	plt.scatter(datenauto[:,0],datenauto[:,1],color="r")
 	plt.scatter(nearestPoints_obs[:,0],nearestPoints_obs[:,1],color="g")
 	plt.plot(current_position[0],current_position[1],marker="H")
-	plt.show(block=True)
+	plt.show(block=False)
 
 def nearest_point(given_point):
+		if np.isnan(given_point[0]):
+			return np.nan, np.array([0,0]) + np.nan
 		curr_lane = current_lane
 		lines = twoLines[curr_lane]
 		radius = twoRadii[curr_lane]
@@ -124,4 +139,5 @@ rospy.init_node("obstacle_detection", anonymous=True)
 sub_pos = rospy.Subscriber("/localization/odom/" + str(carID), Odometry, callback_position, queue_size=1)
 sub_scan = rospy.Subscriber("/scan",LaserScan,callback_scan,queue_size=1)
 
-rospy.spin()
+plt.show(block=True)
+#rospy.spin()
