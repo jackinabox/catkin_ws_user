@@ -50,7 +50,8 @@ def callback_scan(data):
 	global current_position
 	global x,y
 	daten = data.ranges
-	inc = data.angle_increment # 0.0174532923847
+	inc = data.angle_increment  # 0.0174532923847
+	angle_min = data.angle_min
 	#print(inc)
 	#print(daten)
 	datenauto = np.zeros((360, 2)) + np.nan
@@ -65,7 +66,7 @@ def callback_scan(data):
 			#print('2')
 			continue
 		#print('0')
-		inxr = -np.pi + (inc*inx)#*np.pi/180
+		inxr = -np.pi + (inc*inx)#*np.pi/180 # angle_min + (i * angle_increment)
 		xauto = i*np.cos(inxr)
 		yauto = i*np.sin(inxr)
 		auto_vector = np.array([xauto,yauto,0,1]).reshape(4,1)

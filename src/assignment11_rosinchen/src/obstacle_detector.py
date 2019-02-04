@@ -12,10 +12,11 @@ import numpy as np
 
 class ObstacleDetector:
 
-	def __init__(self, threshold_distance_car_to_obstacle, threshold_detection_radius, logging):
+	def __init__(self, threshold_distance_car_to_obstacle, threshold_detection_radius, lidar_barcode_distance, logging):
 		self.threshold_distance_car_to_obstacle = threshold_distance_car_to_obstacle
-		self.threshold_distance_obstacle_to_track = 0.2
+		self.threshold_distance_obstacle_to_track = 0.1
 		self.threshold_detection_radius = threshold_detection_radius
+		self.lidar_correction = lidar_barcode_distance
 		self.logging = logging
 
 	def detects_an_obstacle(self, lidar, position, model):
@@ -41,7 +42,7 @@ class ObstacleDetector:
 			inxr = inx * np.pi / 180
 			xauto = i * np.cos(inxr)
 			yauto = i * np.sin(inxr)
-			auto_vector = np.array([xauto, yauto, 0, 1]).reshape(4, 1)
+			auto_vector = np.array([xauto + self.lidar_correction, yauto, 0, 1]).reshape(4, 1)
 			#if self.logging:
 			#	print("rotate() -> auto_vector.shape: ", auto_vector.shape)
 			world_vector = np.dot(T, auto_vector)
@@ -54,6 +55,7 @@ class ObstacleDetector:
 			#	print("rotate() -> world_vector[:2, 0].reshape(1, 2): ", world_vector[:2, 0].reshape(1, 2))
 			#if self.logging:
 			#	print("rotate() -> datenauto: ", datenauto.shape)
+
 		# plt.scatter(world_vector[0],world_vector[1])
 		# plt.show()
 		#print("....rotate()_______")

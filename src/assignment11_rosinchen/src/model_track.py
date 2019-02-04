@@ -37,7 +37,7 @@ class Track:
 			updated_lane = (curr_lane + 1) % 2
 			self.current_lane = updated_lane
 			#if self.logging:
-			print("switched to %s (%d)" % (self.Lanes[updated_lane], updated_lane))
+			print("### \tswitched to %s (%d) ###" % (self.Lanes[updated_lane], updated_lane))
 			self.time_at_last_switch = time.time()
 
 	'''
