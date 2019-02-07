@@ -96,14 +96,14 @@ class ObstacleDetector:
 		'''
 		try:
 			nearestObstacle = np.nanargmin(distance_obstacle_to_car)
-			print("nearest Obs: ", distance_obstacle_to_car[nearestObstacle])
+			#print("nearest Obs: ", distance_obstacle_to_car[nearestObstacle])
 		except:
-			print("Yeah! Bahn frei, Kartoffelbrei! Hex Hex! ------------except")
+			#print("Yeah! Bahn frei, Kartoffelbrei! Hex Hex! ------------except")
 			nearestObstacle = None
 			return False
 		else:
-			print("Yeah! Bahn frei, Kartoffelbrei! Hex Hex! ----- else")
-
+			#print("Yeah! Bahn frei, Kartoffelbrei! Hex Hex! ----- else")
+			pass
 
 
 		'''
@@ -144,7 +144,7 @@ class ObstacleDetector:
 
 		# print("distanceToCar: ", distanceToCar)
 		# print("nearestObstacle: ", nearestObstacle)
-		print("distanceToCar[nearestObstacle]: ", distance_obstacle_to_car[nearestObstacle])
+		#print("distanceToCar[nearestObstacle]: ", distance_obstacle_to_car[nearestObstacle])
 		#print("distanceToCar[nearestObstacle] < self.distanceToObstacleTreshold: ",
 		#	  distanceToCar[nearestObstacle] < self.distanceToObstacleTreshold)
 		if distance_obstacle_to_car[nearestObstacle] < self.threshold_distance_car_to_obstacle:

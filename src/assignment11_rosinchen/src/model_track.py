@@ -2,6 +2,8 @@
 
 import numpy as np
 import time
+#import rospy	### xxx Felix new
+#from std_msgs.msg import Bool   ### xxx Felix new
 
 
 class Track:
@@ -28,6 +30,8 @@ class Track:
 		self.threshold_time_lane_switch = threshold_time_lane_switch
 		self.first_time_lane_switch = True
 		self.time_at_last_switch = 0
+		#self.pub_handbrake = rospy.Publisher("/driver/handbrake/state", Bool, queue_size=1) ### xxx Felix new
+
 
 	def switch_lane(self):
 		time_now = time.time()
@@ -39,6 +43,10 @@ class Track:
 			#if self.logging:
 			print("### \tswitched to %s (%d) ###" % (self.Lanes[updated_lane], updated_lane))
 			self.time_at_last_switch = time.time()
+		else:									### xxx Felix new
+			pass								### xxx Felix new
+			#print("STOP!!!! Two obstacles")	### xxx Felix new
+			#self.pub_handbrake(0)				### xxx Felix new
 
 	'''
 	def switch_lane(self):

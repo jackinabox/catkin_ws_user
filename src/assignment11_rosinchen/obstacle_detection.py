@@ -33,6 +33,7 @@ logging = False
 Lanes = {0: "inner lane", 1: "outer lane"}
 
 plt.figure()
+print("start obsticle_detection.py")
 
 
 def callback_position(data):
