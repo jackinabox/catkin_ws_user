@@ -26,6 +26,7 @@ target_speed = setup.target_speed  # 300
 curve_angle = setup.curve_angle  # 30
 slow_curve = setup.slowdown_curve  # 0.66
 handbrake = setup.handbrake
+steering_offset = setup.steering_offset
 is_shutdown = False
 
 print(" ##### navigate_to_target started ######")
@@ -90,7 +91,7 @@ def callback_position(data):
 	# print("SteeringAngle: ",steering_angle)#*np.sign(orientation))
 
 	# steering_angle_final = 180 - (np.clip(steering_angle * np.sign(orientation), -90, 90) + 90)
-	steering_angle_final = np.clip(steering_angle * np.sign(orientation) * (-2) + 90, 0, 180)
+	steering_angle_final = np.clip((steering_angle * np.sign(orientation) * (-2) + 90) + steering_offset, 0, 180)
 	# print(180 - (steering_angle * np.sign(orientation) + 90))
 	# print(steering_angle_final)
 	# print(np.linalg.norm(desired_direction))

@@ -14,7 +14,7 @@ class ObstacleDetector:
 
 	def __init__(self, threshold_distance_car_to_obstacle, threshold_detection_radius, lidar_barcode_distance, logging):
 		self.threshold_distance_car_to_obstacle = threshold_distance_car_to_obstacle
-		self.threshold_distance_obstacle_to_track = 0.15
+		self.threshold_distance_obstacle_to_track = 0.1
 		self.threshold_detection_radius = threshold_detection_radius
 		self.lidar_correction = lidar_barcode_distance
 		self.logging = logging
