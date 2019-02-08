@@ -25,7 +25,7 @@ class ObstacleDetector:
 		if not obstacles_current_lane:
 			return False, False
 		else:
-			return obstacles_current_lane, self.process_obstacles(obstacles, model, position, True)
+			return obstacles_current_lane, self.process_obstacles(obstacles, model, position, True) # TRUE = other lane
 
 	def rotate(self, lidar, position):
 		#print("_____rotate() ....")

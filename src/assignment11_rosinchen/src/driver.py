@@ -74,17 +74,21 @@ def callback_update_lookahead_distance(data):
 
 
 def callback_avoid_obstacle(data):
+	#return #!!! UNCOMMENT! ------------------------------- !!! ------------------------------
 	current_lane, other_lane = obstacle_detector.detects_an_obstacle(data, location_current, model)
 	if current_lane and other_lane:
+		print("	DETECTED TWO OBSTACLES")
 		callback_handbrake_tighten("")
 
 	elif current_lane and not other_lane:
+		print(" aint nottin\' found on other lane.")
 		if handbrake.active:
 			callback_handbrake_release("")
 		model.switch_lane()
 		pub_curr_lane.publish(UInt8(model.current_lane))
 
 	else:
+		#print(" Kartoffelbrei!!!")
 		if handbrake.active:
 			callback_handbrake_release("")
 
