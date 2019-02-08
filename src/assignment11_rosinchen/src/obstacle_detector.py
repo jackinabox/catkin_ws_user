@@ -21,7 +21,11 @@ class ObstacleDetector:
 
 	def detects_an_obstacle(self, lidar, position, model):
 		obstacles = self.rotate(lidar, position)
-		return self.process_obstacles(obstacles, model, position)
+		obstacles_current_lane = self.process_obstacles(obstacles, model, position)
+		if not obstacles_current_lane:
+			return False, False
+		else:
+			return obstacles_current_lane, self.process_obstacles(obstacles, model, position, True)
 
 	def rotate(self, lidar, position):
 		#print("_____rotate() ....")
@@ -67,13 +71,17 @@ class ObstacleDetector:
 
 		return datenauto
 
-	def process_obstacles(self, obstacles, model, position):
+
+	def process_obstacles(self, obstacles, model, position, other_lane=False):
+		force = None
+		if other_lane:
+			force = (model.current_lane + 1) % 2
 		# print('_____process_obstacles() .....')
 		x, y = position.pose.pose.position.x, position.pose.pose.position.y
 		# car_lane = model.current_lane
 		# print("detector: current lane: ", model.current_lane)
-		nearestPoints_obs = np.array([model.nearest_point(obs)[1] for obs in obstacles])
-		nearestPoint_car = model.nearest_point([x, y])[1]
+		nearestPoints_obs = np.array([model.nearest_point(obs, force_lane=force)[1] for obs in obstacles])
+		nearestPoint_car = model.nearest_point([x, y], force_lane=force)[1]
 		# print("nearestPoints_obs: ", nearestPoints_obs)
 		distance_obs_to_track = np.array(
 			[np.linalg.norm(nearestPoints_obs[i] - obstacles[i]) for i in range(len(nearestPoints_obs))])
@@ -147,9 +155,13 @@ class ObstacleDetector:
 		#print("distanceToCar[nearestObstacle]: ", distance_obstacle_to_car[nearestObstacle])
 		#print("distanceToCar[nearestObstacle] < self.distanceToObstacleTreshold: ",
 		#	  distanceToCar[nearestObstacle] < self.distanceToObstacleTreshold)
+
 		if distance_obstacle_to_car[nearestObstacle] < self.threshold_distance_car_to_obstacle:
 			print("\ndistance to track: ", distance_obs_to_track[nearestObstacle])
-			print("# OBSTACLE in %fm #" % distance_obstacle_to_car[nearestObstacle])
+			if other_lane:
+				print("# OBSTACLE detected on other lane in %fm #" % distance_obstacle_to_car[nearestObstacle])
+			else:
+				print("# OBSTACLE detected on current lane in %fm #" % distance_obstacle_to_car[nearestObstacle])
 			return True  # distanceToCar[nearestObstacle] < self.distanceToObstacleTreshold
 		else:
 			return False

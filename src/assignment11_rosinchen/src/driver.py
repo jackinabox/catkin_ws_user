@@ -74,9 +74,19 @@ def callback_update_lookahead_distance(data):
 
 
 def callback_avoid_obstacle(data):
-	if obstacle_detector.detects_an_obstacle(data, location_current, model):
+	current_lane, other_lane = obstacle_detector.detects_an_obstacle(data, location_current, model)
+	if current_lane and other_lane:
+		callback_handbrake_tighten("")
+
+	elif current_lane and not other_lane:
+		if handbrake.active:
+			callback_handbrake_release("")
 		model.switch_lane()
 		pub_curr_lane.publish(UInt8(model.current_lane))
+
+	else:
+		if handbrake.active:
+			callback_handbrake_release("")
 
 
 def callback_lane_set_to(data):
